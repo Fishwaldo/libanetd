@@ -50,7 +50,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_httpclient_OBJECTS = httpclient-cloud_client.$(OBJEXT) \
+am_httpclient_OBJECTS = httpclient-httpclient.$(OBJEXT) \
 	httpclient-http_request.$(OBJEXT) \
 	httpclient-http_response.$(OBJEXT) \
 	httpclient-transmitter.$(OBJEXT)
@@ -176,9 +176,9 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-httpclient_SOURCES = cloud_client.cpp	http_request.cpp	http_response.cpp	transmitter.cpp
+httpclient_SOURCES = httpclient.cpp	http_request.cpp	http_response.cpp	transmitter.cpp
 httpclient_CXXFLAGS = -I/opt/local/include -I. -O0
-httpclient_LDFLAGS = -L/opt/local/lib/ -lboost_date_time-mt -lboost_serialization-mt -lboost_thread-mt -lboost_regex-mt -lboost_system-mt -pthread
+httpclient_LDFLAGS = -L/opt/local/lib/ -lboost_date_time-mt -lboost_serialization-mt -lboost_thread-mt -lboost_regex-mt -lboost_system-mt -lssl -lcrypto -pthread
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -280,9 +280,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/httpclient-cloud_client.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/httpclient-http_request.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/httpclient-http_response.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/httpclient-httpclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/httpclient-transmitter.Po@am__quote@
 
 .cpp.o:
@@ -299,19 +299,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-httpclient-cloud_client.o: cloud_client.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(httpclient_CXXFLAGS) $(CXXFLAGS) -MT httpclient-cloud_client.o -MD -MP -MF $(DEPDIR)/httpclient-cloud_client.Tpo -c -o httpclient-cloud_client.o `test -f 'cloud_client.cpp' || echo '$(srcdir)/'`cloud_client.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/httpclient-cloud_client.Tpo $(DEPDIR)/httpclient-cloud_client.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='cloud_client.cpp' object='httpclient-cloud_client.o' libtool=no @AMDEPBACKSLASH@
+httpclient-httpclient.o: httpclient.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(httpclient_CXXFLAGS) $(CXXFLAGS) -MT httpclient-httpclient.o -MD -MP -MF $(DEPDIR)/httpclient-httpclient.Tpo -c -o httpclient-httpclient.o `test -f 'httpclient.cpp' || echo '$(srcdir)/'`httpclient.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/httpclient-httpclient.Tpo $(DEPDIR)/httpclient-httpclient.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='httpclient.cpp' object='httpclient-httpclient.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(httpclient_CXXFLAGS) $(CXXFLAGS) -c -o httpclient-cloud_client.o `test -f 'cloud_client.cpp' || echo '$(srcdir)/'`cloud_client.cpp
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(httpclient_CXXFLAGS) $(CXXFLAGS) -c -o httpclient-httpclient.o `test -f 'httpclient.cpp' || echo '$(srcdir)/'`httpclient.cpp
 
-httpclient-cloud_client.obj: cloud_client.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(httpclient_CXXFLAGS) $(CXXFLAGS) -MT httpclient-cloud_client.obj -MD -MP -MF $(DEPDIR)/httpclient-cloud_client.Tpo -c -o httpclient-cloud_client.obj `if test -f 'cloud_client.cpp'; then $(CYGPATH_W) 'cloud_client.cpp'; else $(CYGPATH_W) '$(srcdir)/cloud_client.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/httpclient-cloud_client.Tpo $(DEPDIR)/httpclient-cloud_client.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='cloud_client.cpp' object='httpclient-cloud_client.obj' libtool=no @AMDEPBACKSLASH@
+httpclient-httpclient.obj: httpclient.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(httpclient_CXXFLAGS) $(CXXFLAGS) -MT httpclient-httpclient.obj -MD -MP -MF $(DEPDIR)/httpclient-httpclient.Tpo -c -o httpclient-httpclient.obj `if test -f 'httpclient.cpp'; then $(CYGPATH_W) 'httpclient.cpp'; else $(CYGPATH_W) '$(srcdir)/httpclient.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/httpclient-httpclient.Tpo $(DEPDIR)/httpclient-httpclient.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='httpclient.cpp' object='httpclient-httpclient.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(httpclient_CXXFLAGS) $(CXXFLAGS) -c -o httpclient-cloud_client.obj `if test -f 'cloud_client.cpp'; then $(CYGPATH_W) 'cloud_client.cpp'; else $(CYGPATH_W) '$(srcdir)/cloud_client.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(httpclient_CXXFLAGS) $(CXXFLAGS) -c -o httpclient-httpclient.obj `if test -f 'httpclient.cpp'; then $(CYGPATH_W) 'httpclient.cpp'; else $(CYGPATH_W) '$(srcdir)/httpclient.cpp'; fi`
 
 httpclient-http_request.o: http_request.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(httpclient_CXXFLAGS) $(CXXFLAGS) -MT httpclient-http_request.o -MD -MP -MF $(DEPDIR)/httpclient-http_request.Tpo -c -o httpclient-http_request.o `test -f 'http_request.cpp' || echo '$(srcdir)/'`http_request.cpp
