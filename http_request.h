@@ -4,32 +4,18 @@
 // Boost
 #include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
-#include <boost/optional.hpp>
-
-#include <boost/shared_array.hpp>
-
 #include <boost/bind.hpp>
 #include <boost/date_time.hpp>
-
-#include <boost/interprocess/detail/move.hpp>
 #include <boost/thread.hpp>
-#include <boost/thread/future.hpp>
-
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/map.hpp> 
-#include <boost/serialization/string.hpp>
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 
 #include <exception>
 #include <map>
 #include <string>
 #include <vector>
 
-#include "pointer_utils.h"
 #include "http_response.h"
 
 class http_request
@@ -47,6 +33,7 @@ public:
 
 
 	std::string method;
+	std::string host;
 	std::string url;
 	std::string version;
 	int status;
@@ -59,8 +46,18 @@ public:
 	class connection_exception: public std::exception { };
 	class policy_file_request_exception: public std::exception { };
 private:
+	size_t socksend(std::string data);
+	size_t sockget(char *data, size_t size);
+
 	enum http_response_parser_state { VERSION, STATUS, DESCRIPTION, HEADER_KEY, HEADER_VALUE, BODY, OK };
+	enum http_proxy_enum { NONE, HTTP_PROXY, HTTPS_PROXY};
+	enum http_type_enum { PLAIN_HTTP, SSL_HTTPS};
+
+	http_proxy_enum http_proxy;
+	http_type_enum http_type;
 	boost::asio::ip::tcp::socket socket;
+	boost::asio::ssl::context ctx;
+	boost::asio::ssl::stream<boost::asio::ip::tcp::socket> sslsocket;
 
 
 

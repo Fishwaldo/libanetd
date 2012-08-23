@@ -1,8 +1,18 @@
+#include <boost/algorithm/string/case_conv.hpp>
+
 #include "http_request.h"
 
 
+std::string get_env(std::string const& name)
+{
+   char* var = getenv(name.c_str());
+   //getenv can return NULL, std::string(NULL) throws
+   if(var) return var;
+   else return "";
+}
 
-http_request::http_request(http_response *myresponse, boost::asio::io_service &io) : socket(io) {
+
+http_request::http_request(http_response *myresponse, boost::asio::io_service &io) : socket(io), ctx(boost::asio::ssl::context::sslv23), sslsocket(io, ctx) {
     this->response = myresponse;
     this->reset();
 }
@@ -16,24 +26,61 @@ void http_request::clear()
 	this->method = "";
 	this->url = "";
 	this->version = "";
+	this->host = "";
 	this->arguments.clear();
+	this->http_proxy = NONE;
+	this->http_type = PLAIN_HTTP;
 }
 
 void http_request::reset()
 {
 	this->method = "GET";
 	this->url = "/";
+	this->host = "";
 	this->version = "HTTP/1.0";
 	this->arguments.clear();
 	this->response->reset();
+	this->http_proxy = NONE;
+	this->http_type = PLAIN_HTTP;
 }
 
+
+size_t http_request::socksend(std::string data) {
+	switch (this->http_type) {
+		case PLAIN_HTTP:
+			return this->socket.send(boost::asio::buffer(data.c_str(), data.length()));
+			break;
+		case SSL_HTTPS:
+			return this->sslsocket.write_some(boost::asio::buffer(data.c_str(), data.length()));
+			break;
+	}
+}
+
+size_t http_request::sockget(char *data, size_t size) {
+	switch (this->http_type) {
+		case PLAIN_HTTP:
+			return this->socket.read_some(boost::asio::buffer(data, size));
+			break;
+		case SSL_HTTPS:
+			return this->sslsocket.read_some(boost::asio::buffer(data, size));
+			break;
+	}
+}
 
 void http_request::send()
 {
 	headers["Content-Length"] = boost::lexical_cast<std::string>(body.length());
 
-	std::string request = this->method + ' ' + this->url;
+	std::string request;
+	switch (this->http_proxy) {
+		case NONE:
+			request = this->method + ' ' + this->url;
+			break;
+		case HTTP_PROXY:
+		case HTTPS_PROXY:
+			request = this->method + ' ' + this->host + this->url;
+			break;
+	}
 	if (arguments.begin() != arguments.end())
 	{
 		request += '?';
@@ -56,12 +103,14 @@ void http_request::send()
 	for (std::map<std::string, std::string>::iterator header = this->headers.begin(); header != this->headers.end(); ++header)
 		request += header->first + ": " + header->second + "\r\n";
 	request += "\r\n" + this->body;
+	std::cout << request << "\n";
 	this->socket.send(boost::asio::buffer(request.c_str(), request.length()));
 	this->receive();
 }
 
 void http_request::send(std::string absolute_url)
 {
+
 	// Parse the URL.
 	std::vector<std::string> url_parts;
 	boost::regex url_expression(
@@ -73,18 +122,58 @@ void http_request::send(std::string absolute_url)
 	boost::regex_split(std::back_inserter(url_parts), absolute_url, url_expression);
 	std::string host = url_parts[1];
 	std::string port = url_parts[2];
+	this->host = url_parts[0] + "://" + url_parts[1] + ":" + (url_parts[2].empty() ? "80" : url_parts[2]);
 	this->url = url_parts[3] + url_parts[4];
 
 	// Add the 'Host' header to the request. Not doing this is treated as bad request by many servers.
 	this->headers["Host"] = host;
 
-	// Use the default port if no port is specified.
-	if (port.empty())
-		port = "80";
 
 	// Use the empty path if no path is specified.
 	if (this->url.empty())
 		this->url = "/";
+	boost::algorithm::to_lower(url_parts[0]);
+	/* check for Proxy Server */
+	if (url_parts[0] == "http") {
+		this->http_type = PLAIN_HTTP;
+		if (port.empty())
+			port = "80";
+
+		std::string proxy = get_env("http_proxy");
+		if (proxy != "") {
+			std::vector<std::string> proxy_parts;
+			boost::regex proxy_expression(
+				// protocol            host               port
+				"^(\?:([^:/\?#]+)://)\?(\\w+[^/\?#:]*)(\?::(\\d+))\?"
+			);
+			boost::regex_split(std::back_inserter(proxy_parts), proxy, proxy_expression);
+			std::cout << "Connecting Via Proxy at: "<< proxy_parts[0] << "://" << proxy_parts[1] << ":" << proxy_parts[2] << "\n";
+			host = proxy_parts[1];
+			port = proxy_parts[2];
+			this->http_proxy = HTTP_PROXY;
+		}
+	} else if (url_parts[0] == "https") {
+		this->http_type = SSL_HTTPS;
+		if (port.empty())
+			port = "443";
+
+		std::string proxy = get_env("https_proxy");
+		if (proxy != "") {
+			std::vector<std::string> proxy_parts;
+			boost::regex proxy_expression(
+				// protocol            host               port
+				"^(\?:([^:/\?#]+)://)\?(\\w+[^/\?#:]*)(\?::(\\d+))\?"
+			);
+			boost::regex_split(std::back_inserter(proxy_parts), proxy, proxy_expression);
+			std::cout << "Connecting Via Proxy at: "<< proxy_parts[0] << "://" << proxy_parts[1] << ":" << proxy_parts[2] << "\n";
+			host = proxy_parts[1];
+			port = proxy_parts[2];
+			this->http_proxy = HTTP_PROXY;
+		}
+	}
+
+
+
 
 	// Resolve the hostname.
 	boost::asio::io_service io_service;
@@ -107,13 +196,21 @@ void http_request::send(std::string absolute_url)
 		boost::asio::ip::tcp::endpoint endpoint = iterator->endpoint();
 		try
 		{
-			this->socket.connect(endpoint);
+			switch (this->http_type) {
+				case PLAIN_HTTP:
+					this->socket.connect(endpoint);
+					break;
+				case SSL_HTTPS:
+					this->sslsocket.lowest_layer().connect(endpoint);
+					this->sslsocket.handshake(boost::asio::ssl::stream_base::client);
+					break;
+			}
 			connected = true;
 			break;
 		}
 		catch (boost::system::system_error& ec)
 		{
-		 std::cout << ec.what() << "\n";   
+		 std::cout << ec.what() << "\n";
 		}
 	std::cout << endpoint << "\n";
 	}
@@ -132,17 +229,17 @@ void http_request::receive()
 
 	http_response_parser_state parser_state = VERSION;
 
-	int buffer_size = 1024;
+	size_t buffer_size = 1024;
 	char* buffer = new char[buffer_size];
 	std::string status = "";
 	std::string key = "";
 	std::string value = "";
-	
+
 	try
 	{
 		do
 		{
-			int bytes_read = this->socket.read_some(boost::asio::buffer(buffer, buffer_size));
+			int bytes_read = this->sockget(buffer, buffer_size);
 
 			char* position = buffer;
 			do
@@ -238,9 +335,9 @@ void http_request::receive()
 				}
 			} while (position < buffer + bytes_read);
 //			std::cout << "Bytes Read: " << bytes_read << "\nFinished: " << (position < buffer + bytes_read)  << "\nState: " << parser_state << "\nBody: " << this->body.length() << " Size: " << this->body_size << "\n\n";
-		
+
 		} while (parser_state != OK);
-		
+
 	}
 	catch (boost::system::system_error& e)
 	{
@@ -265,14 +362,25 @@ void http_request::receive()
 
 void http_request::disconnect()
 {
-
-	if (socket.is_open())
-	{
-		try
-		{
-			socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
-			socket.close();
-		}
-		catch (boost::system::system_error&) { }
+	switch (this->http_type) {
+		case PLAIN_HTTP:
+			if (socket.is_open())
+			{
+				try
+				{
+					socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+					socket.close();
+				}
+				catch (boost::system::system_error&) { }
+			}
+			break;
+		case SSL_HTTPS:
+			if (this->sslsocket.lowest_layer().is_open()) {
+				try {
+					this->sslsocket.shutdown();
+					this->sslsocket.lowest_layer().close();
+				} catch (boost::system::system_error&) { }
+			}
+			break;
 	}
 }

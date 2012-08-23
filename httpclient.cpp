@@ -32,7 +32,7 @@ public:
   void print1 ()
   {
 
-    if (count_ < 15)
+    if (count_ < 2)
 
       {
 
@@ -69,7 +69,7 @@ main (int argc, char *argv[])
 {
 
   // Initialize default settings.
-  std::string server = "http://www.google.com/search";
+  std::string server = "https://www.google.com/search";
 
   boost::asio::io_service io;
   printer p(io);
