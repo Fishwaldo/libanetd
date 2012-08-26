@@ -32,7 +32,6 @@ void transmitter::connect(std::string url)
 				std::cout << boost::this_thread::get_id() << " "<< "Redirecting (" << this->response->getStatus() << ") to " << Location << "\n";
 				url = Location;
 				request.reset();
-				request.disconnect();
 			} else {
 				std::cout << boost::this_thread::get_id() << " "<< "Redirection Failure (" << this->response->getStatus() << "). No Location Specified\n";
 				throw;

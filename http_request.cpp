@@ -23,6 +23,7 @@ http_request::~http_request()
 
 void http_request::clear()
 {
+	this->disconnect();
 	this->method = "";
 	this->url = "";
 	this->version = "";
@@ -34,6 +35,7 @@ void http_request::clear()
 
 void http_request::reset()
 {
+	this->disconnect();
 	this->method = "GET";
 	this->url = "/";
 	this->host = "";
@@ -61,8 +63,18 @@ size_t http_request::sockget(char *data, size_t size) {
 		case PLAIN_HTTP:
 			return this->socket.read_some(boost::asio::buffer(data, size));
 			break;
-		case SSL_HTTPS:
-			return this->sslsocket.read_some(boost::asio::buffer(data, size));
+		case SSL_HTTPS: {
+				boost::system::error_code es;
+				size_t retsize;
+				retsize = this->sslsocket.read_some(boost::asio::buffer(data,size), es);
+				if (es.category() == boost::asio::error::get_ssl_category() && es.value() != ERR_PACK(ERR_LIB_SSL, 0, SSL_R_SHORT_READ)) {
+					return retsize;
+				}
+				if (retsize == 0) {
+					throw boost::system::system_error(boost::asio::error::eof);
+				}
+				return retsize;
+			}
 			break;
 	}
 }
@@ -104,7 +116,7 @@ void http_request::send()
 		request += header->first + ": " + header->second + "\r\n";
 	request += "\r\n" + this->body;
 	std::cout << request << "\n";
-	this->socket.send(boost::asio::buffer(request.c_str(), request.length()));
+	this->socksend(request);
 	this->receive();
 }
 
@@ -201,6 +213,8 @@ void http_request::send(std::string absolute_url)
 					this->socket.connect(endpoint);
 					break;
 				case SSL_HTTPS:
+					this->sslsocket.set_verify_mode(boost::asio::ssl::context::verify_none);
+					this->sslsocket.set_verify_callback(boost::bind(&http_request::verify_callback, this, _1, _2));
 					this->sslsocket.lowest_layer().connect(endpoint);
 					this->sslsocket.handshake(boost::asio::ssl::stream_base::client);
 					break;
@@ -214,6 +228,7 @@ void http_request::send(std::string absolute_url)
 		}
 	std::cout << endpoint << "\n";
 	}
+	std::cout << this->sslsocket.lowest_layer().is_open() << "\n";
 	// Check if the connection is successful.
 	if (!connected)
 		throw connection_exception();
@@ -223,13 +238,23 @@ void http_request::send(std::string absolute_url)
 
 }
 
+bool http_request::verify_callback(bool preverified, boost::asio::ssl::verify_context &vctx) {
+	   char subject_name[256];
+	        X509* cert = X509_STORE_CTX_get_current_cert(vctx.native_handle());
+	        X509_NAME_oneline(X509_get_subject_name(cert), subject_name, 256);
+	        std::cout << "Verifying:\n" << subject_name << std::endl;
+
+	        return preverified;
+
+}
+
 void http_request::receive()
 {
 	this->response->reset();
 
 	http_response_parser_state parser_state = VERSION;
 
-	size_t buffer_size = 1024;
+	size_t buffer_size = 2048;
 	char* buffer = new char[buffer_size];
 	std::string status = "";
 	std::string key = "";
@@ -240,7 +265,7 @@ void http_request::receive()
 		do
 		{
 			int bytes_read = this->sockget(buffer, buffer_size);
-
+std::cout << bytes_read << " size: " << buffer_size << "\n";
 			char* position = buffer;
 			do
 			{
@@ -351,6 +376,7 @@ void http_request::receive()
 	}
 	catch (...)
 	{
+		std::cout << this->response->getBody() << "\n";
 		delete buffer;
 		throw;
 	}
@@ -371,15 +397,25 @@ void http_request::disconnect()
 					socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
 					socket.close();
 				}
-				catch (boost::system::system_error&) { }
+				catch (boost::system::system_error& ec) {
+					std::cout << "shutdown error" << ec.what() << "\n";
+				}
 			}
 			break;
 		case SSL_HTTPS:
 			if (this->sslsocket.lowest_layer().is_open()) {
 				try {
-					this->sslsocket.shutdown();
+					boost::system::error_code se;
+					if (this->sslsocket.shutdown(se)) {
+						if (se.category() == boost::asio::error::get_ssl_category() && se.value() != ERR_PACK(ERR_LIB_SSL, 0, SSL_R_SHORT_READ)) {
+							throw se;
+						}
+					}
 					this->sslsocket.lowest_layer().close();
-				} catch (boost::system::system_error&) { }
+				} catch (boost::system::system_error& ec) {
+					std::cout << "Shutdown error" << ec.what() << "\n";
+
+				}
 			}
 			break;
 	}
