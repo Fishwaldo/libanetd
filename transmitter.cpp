@@ -54,7 +54,7 @@ void transmitter::connect(std::string url)
 		iter++;
 	}
 
-	//std::cout << boost::this_thread::get_id() << " "<< this->response->body << "\n";
+	//std::cout << boost::this_thread::get_id() << " "<< this->response->getBody() << "\n";
 	//Check for the this->response status.
 	if (this->response->getStatus() != 200)
 	{

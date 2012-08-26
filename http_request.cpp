@@ -1,5 +1,5 @@
 #include <boost/algorithm/string/case_conv.hpp>
-
+#include <boost/algorithm/string.hpp>
 #include "http_request.h"
 
 
@@ -134,11 +134,10 @@ void http_request::send(std::string absolute_url)
 	boost::regex_split(std::back_inserter(url_parts), absolute_url, url_expression);
 	std::string host = url_parts[1];
 	std::string port = url_parts[2];
-	this->host = url_parts[0] + "://" + url_parts[1] + ":" + (url_parts[2].empty() ? "80" : url_parts[2]);
+
 	this->url = url_parts[3] + url_parts[4];
 
 	// Add the 'Host' header to the request. Not doing this is treated as bad request by many servers.
-	this->headers["Host"] = host;
 
 
 	// Use the empty path if no path is specified.
@@ -150,6 +149,11 @@ void http_request::send(std::string absolute_url)
 		this->http_type = PLAIN_HTTP;
 		if (port.empty())
 			port = "80";
+		this->host = url_parts[0] + "://" + url_parts[1] + ":" + (url_parts[2].empty() ? "80" : url_parts[2]);
+
+		this->targeturl = url_parts[1] + ":" + port;
+
+		this->headers["Host"] = host;
 
 		std::string proxy = get_env("http_proxy");
 		if (proxy != "") {
@@ -169,6 +173,12 @@ void http_request::send(std::string absolute_url)
 		if (port.empty())
 			port = "443";
 
+		this->host = url_parts[0] + "://" + url_parts[1] + ":" + (url_parts[2].empty() ? "443" : url_parts[2]);
+
+		this->targeturl = url_parts[1] + ":" + port;
+
+		this->headers["Host"] = host;
+
 		std::string proxy = get_env("https_proxy");
 		if (proxy != "") {
 			std::vector<std::string> proxy_parts;
@@ -183,6 +193,7 @@ void http_request::send(std::string absolute_url)
 			this->http_proxy = HTTP_PROXY;
 		}
 	}
+
 
 
 
@@ -216,7 +227,29 @@ void http_request::send(std::string absolute_url)
 					this->sslsocket.set_verify_mode(boost::asio::ssl::context::verify_none);
 					this->sslsocket.set_verify_callback(boost::bind(&http_request::verify_callback, this, _1, _2));
 					this->sslsocket.lowest_layer().connect(endpoint);
+					/* if we are connecting through a proxy.... */
+					if (this->http_proxy == HTTP_PROXY) {
+						/* send our Proxy Headers */
+						std::string proxycmd = "CONNECT " + this->targeturl + " " + this->version + "\r\n\r\n";
+						char *data = new char[1024];
+						std::cout << proxycmd << "\n";
+						this->sslsocket.next_layer().send(boost::asio::buffer(proxycmd.c_str(), proxycmd.length()));
+						while (this->sslsocket.next_layer().read_some(boost::asio::buffer(data, 1024))) {
+							std::string proxyresponse(data);
+							//typedef  split_vector;
+							std::vector<std::string> SplitResponse;
+							boost::is_equal testequal;
+							boost::algorithm::split(SplitResponse, proxyresponse, boost::algorithm::is_space(), boost::algorithm::token_compress_on);
+							//boost::algorithm::split(SplitResponse, proxyresponse, testequal(" "));
+							if (SplitResponse[1] == "200") {
+								break;
+							} else {
+								throw;
+							}
+						}
+					}
 					this->sslsocket.handshake(boost::asio::ssl::stream_base::client);
+
 					break;
 			}
 			connected = true;
@@ -226,9 +259,7 @@ void http_request::send(std::string absolute_url)
 		{
 		 std::cout << ec.what() << "\n";
 		}
-	std::cout << endpoint << "\n";
 	}
-	std::cout << this->sslsocket.lowest_layer().is_open() << "\n";
 	// Check if the connection is successful.
 	if (!connected)
 		throw connection_exception();
@@ -265,7 +296,6 @@ void http_request::receive()
 		do
 		{
 			int bytes_read = this->sockget(buffer, buffer_size);
-std::cout << bytes_read << " size: " << buffer_size << "\n";
 			char* position = buffer;
 			do
 			{

@@ -35,6 +35,7 @@ public:
 	std::string method;
 	std::string host;
 	std::string url;
+	std::string targeturl;
 	std::string version;
 	int status;
 	std::string description;
