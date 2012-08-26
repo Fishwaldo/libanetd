@@ -32,7 +32,7 @@ public:
   void print1 ()
   {
 
-    if (count_ < 2)
+    if (count_ < 20)
 
       {
 

@@ -48,6 +48,7 @@ public:
 private:
 	size_t socksend(std::string data);
 	size_t sockget(char *data, size_t size);
+	bool verify_callback(bool preverified, boost::asio::ssl::verify_context &vctx);
 
 	enum http_response_parser_state { VERSION, STATUS, DESCRIPTION, HEADER_KEY, HEADER_VALUE, BODY, OK };
 	enum http_proxy_enum { NONE, HTTP_PROXY, HTTPS_PROXY};
