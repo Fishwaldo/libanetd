@@ -18,16 +18,67 @@
 
 #include "http_response.h"
 
-
+/*! \brief This is the main Class that Controls all downloads.
+ *
+ * This is the main class used to initiate all downloads. The constructor accepts the Response Object (that will contain the results) and a
+ * IO Service Object (From Boost::asio) that will be used to execute a callback when the request completes.
+ *
+ * There are two implementations possible.
+ * 1. Using a Callback function (via the setCallback() function) when the download completes
+ * 2. using a boost::unique_future via the http_request::Status and either polling for the completion, or using the wait handlers
+ *
+ * An Example of using the Callback method:
+ * ~~~
+ * 	 void HTTPCallback(http_response *response) {
+ *		// Process the response pointer here to find out if successful
+ *		...
+ *	 }
+ *
+ *	 void main() {
+ *		boost::asio::io_service io;
+ *		boost::shared_ptr < http_request > transmitter_block;
+ *		http_response response;
+ *		// Initialize the transmitter block.
+ *		transmitter_block = boost::shared_ptr < http_request > (new http_request (&response, &io));
+ *		transmitter_block->setCallback(boost::bind(HTTPCallback, _1));
+ *		transmitter_block->Starttransfer (server);
+ *		// Assuming you do other stuff here, and add work to the io service
+ *		io.run();
+ * 	 }
+ * ~~~
+ * An Example of using the unique_future method:
+ * ~~~
+ *	 void main() {
+ *		boost::asio::io_service io;
+ *		boost::shared_ptr < http_request > transmitter_block;
+ *		http_response response;
+ *		// Initialize the transmitter block.
+ *		transmitter_block = boost::shared_ptr < http_request > (new http_request (&response, &io));
+ *		transmitter_block->Starttransfer (server);
+ *		/* Wait for the transfer to complete
+ *		transmitter_block->Status.wait();
+ *		std::cout << transmitter_block->Status.get()->getStatus();
+ * 	 }
+ *
+ *
+ * ~~~
+ */
 class http_request
 {
 public:
+	/*! \brief Constructor
+	 *
+	 * Create and Initialize the http_request classes. Takes two paramaters
+	 *
+	 * @param response This is the class to store the results into and pass back via either the callback or unique_future interface
+	 * @param postback this is the IO Service to use to post the callback on (the callback will run on threads that are calling the run() method on this IO Service
+	 */
 	http_request(http_response *response, boost::asio::io_service *postback);
 	~http_request();
 	void reset();
 	bool Starttransfer(std::string url);
 	typedef boost::function<void (http_response *)> t_callbackFunc;
-	bool setCallback(t_callbackFunc);
+	bool setCallback(t_callbackFunc); /**< a Member Function. Details */
 	boost::unique_future<http_response*> Status;
 	class connection_exception: public std::exception { };
 	class server_connection_exception: public std::exception { };
