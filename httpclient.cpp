@@ -3,7 +3,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include "transmitter.h"
+#include "http.h"
 
 
 class printer
@@ -24,7 +24,7 @@ public:
    ~printer ()
   {
 
-    std::cout << boost::this_thread::get_id() << " " << "Final count is " << count_ << "\n";
+    LogTrace() << "Final count is " << count_;
 
   }
 
@@ -36,7 +36,7 @@ public:
 
       {
 
-	std::cout << boost::this_thread::get_id() << " " << "Timer 1: " << count_ << "\n";
+	LogTrace() << "Timer 1: " << count_ ;
 
 	++count_;
 
@@ -60,6 +60,10 @@ private:
   int count_;
 
 };
+
+void HTTPCallback(http_response *response) {
+	LogTrace() << response->getStatus();
+}
 
 
 
@@ -87,45 +91,18 @@ main (int argc, char *argv[])
     }
 
 
-  boost::shared_ptr < transmitter > transmitter_block;
-
+  boost::shared_ptr < http_request > transmitter_block;
+  http_response response;
 
   // Initialize the transmitter block.
   transmitter_block =
-    boost::shared_ptr < transmitter > (new transmitter (&io));
+    boost::shared_ptr < http_request > (new http_request (&response, &io));
+  transmitter_block->setCallback(boost::bind(HTTPCallback, _1));
+  transmitter_block->Starttransfer (server);
 
-
-  // Repeat asking for the username and the server URL until connection is successfully established.
-  bool succeed = false;
-
-  while (!succeed)
-
-    {
-
-      try
-      {
-
-	// Try to connect to the server.
-	transmitter_block->Starttransfer (server);
-
-	// Connection succeeded.
-	succeed = true;
-
-      }
-
-      catch (transmitter::server_connection_exception &)
-      {
-
-	// Failed to connect to the server. Ask for another server URL.
-	std::cout << boost::this_thread::get_id() << " " << "Please, specify another server URL: ";
-
-	std::cin >> server;
-
-      }
-
-    }
-    io.run();
-
+  io.run();
+  transmitter_block->Status.wait();
+  std::cout << transmitter_block->Status.get()->getStatus() << std::endl;
 
 
   return 0;

@@ -12,9 +12,10 @@ std::string get_env(std::string const& name)
 }
 
 
-http_request::http_request(http_response *myresponse, boost::asio::io_service &io) : socket(io), ctx(boost::asio::ssl::context::sslv23), sslsocket(io, ctx) {
-    this->response = myresponse;
+http_request::http_request(http_response *myresponse, boost::asio::io_service *postback) : io(), socket(this->io), ctx(boost::asio::ssl::context::sslv23), sslsocket(this->io, ctx) {
+	this->response = myresponse;
     this->reset();
+	this->postbackio = postback;
 }
 
 http_request::~http_request()
@@ -115,7 +116,7 @@ void http_request::send()
 	for (std::map<std::string, std::string>::iterator header = this->headers.begin(); header != this->headers.end(); ++header)
 		request += header->first + ": " + header->second + "\r\n";
 	request += "\r\n" + this->body;
-	std::cout << request << "\n";
+	LogTrace() << "Sending: " << request;
 	this->socksend(request);
 	this->receive();
 }
@@ -163,7 +164,7 @@ void http_request::send(std::string absolute_url)
 				"^(\?:([^:/\?#]+)://)\?(\\w+[^/\?#:]*)(\?::(\\d+))\?"
 			);
 			boost::regex_split(std::back_inserter(proxy_parts), proxy, proxy_expression);
-			std::cout << "Connecting Via Proxy at: "<< proxy_parts[0] << "://" << proxy_parts[1] << ":" << proxy_parts[2] << "\n";
+			LogDebug() << "Connecting Via HTTP Proxy at: "<< proxy_parts[0] << "://" << proxy_parts[1] << ":" << proxy_parts[2];
 			host = proxy_parts[1];
 			port = proxy_parts[2];
 			this->http_proxy = HTTP_PROXY;
@@ -187,7 +188,7 @@ void http_request::send(std::string absolute_url)
 				"^(\?:([^:/\?#]+)://)\?(\\w+[^/\?#:]*)(\?::(\\d+))\?"
 			);
 			boost::regex_split(std::back_inserter(proxy_parts), proxy, proxy_expression);
-			std::cout << "Connecting Via Proxy at: "<< proxy_parts[0] << "://" << proxy_parts[1] << ":" << proxy_parts[2] << "\n";
+			LogDebug() << "Connecting Via HTTPS Proxy at: "<< proxy_parts[0] << "://" << proxy_parts[1] << ":" << proxy_parts[2];
 			host = proxy_parts[1];
 			port = proxy_parts[2];
 			this->http_proxy = HTTP_PROXY;
@@ -232,7 +233,7 @@ void http_request::send(std::string absolute_url)
 						/* send our Proxy Headers */
 						std::string proxycmd = "CONNECT " + this->targeturl + " " + this->version + "\r\n\r\n";
 						char *data = new char[1024];
-						std::cout << proxycmd << "\n";
+						LogTrace() << "Proxy Command: " << proxycmd;
 						this->sslsocket.next_layer().send(boost::asio::buffer(proxycmd.c_str(), proxycmd.length()));
 						while (this->sslsocket.next_layer().read_some(boost::asio::buffer(data, 1024))) {
 							std::string proxyresponse(data);
@@ -257,7 +258,7 @@ void http_request::send(std::string absolute_url)
 		}
 		catch (boost::system::system_error& ec)
 		{
-		 std::cout << ec.what() << "\n";
+		 LogCritical() << "Error Connecting to " << this->url << ": "<< ec.what();
 		}
 	}
 	// Check if the connection is successful.
@@ -273,7 +274,7 @@ bool http_request::verify_callback(bool preverified, boost::asio::ssl::verify_co
 	   char subject_name[256];
 	        X509* cert = X509_STORE_CTX_get_current_cert(vctx.native_handle());
 	        X509_NAME_oneline(X509_get_subject_name(cert), subject_name, 256);
-	        std::cout << "Verifying:\n" << subject_name << std::endl;
+	        LogDebug() << "Verifying Certificate: " << subject_name;
 
 	        return preverified;
 
@@ -308,8 +309,8 @@ void http_request::receive()
 					{
 						position++;
 						parser_state = STATUS;
-                                                this->response->setVersion(status);
-                                                status = "";
+                        this->response->setVersion(status);
+                        status = "";
 					}
 					break;
 				case STATUS:
@@ -373,8 +374,8 @@ void http_request::receive()
 					else
 					{
 						position++;
-//						std::cout << "key: " << key << " value: " << value << "\n";
-                                                this->response->setHeaders(key, value);
+						LogTrace() << boost::this_thread::get_id() << "Header key: " << key << " value: " << value;
+                        this->response->setHeaders(key, value);
 						key = "";
 						parser_state = HEADER_KEY;
 					}
@@ -389,7 +390,6 @@ void http_request::receive()
 					break;
 				}
 			} while (position < buffer + bytes_read);
-//			std::cout << "Bytes Read: " << bytes_read << "\nFinished: " << (position < buffer + bytes_read)  << "\nState: " << parser_state << "\nBody: " << this->body.length() << " Size: " << this->body_size << "\n\n";
 
 		} while (parser_state != OK);
 
@@ -406,15 +406,11 @@ void http_request::receive()
 	}
 	catch (...)
 	{
-		std::cout << this->response->getBody() << "\n";
 		delete buffer;
 		throw;
 	}
 	delete buffer;
 }
-
-
-
 
 void http_request::disconnect()
 {
@@ -428,7 +424,7 @@ void http_request::disconnect()
 					socket.close();
 				}
 				catch (boost::system::system_error& ec) {
-					std::cout << "shutdown error" << ec.what() << "\n";
+					LogWarn() << "Shutdown error: " << ec.what();
 				}
 			}
 			break;
@@ -443,10 +439,69 @@ void http_request::disconnect()
 					}
 					this->sslsocket.lowest_layer().close();
 				} catch (boost::system::system_error& ec) {
-					std::cout << "Shutdown error" << ec.what() << "\n";
+					LogWarn() << "Shutdown error: " << ec.what();
 
 				}
 			}
 			break;
 	}
+}
+
+http_response *http_request::connect(std::string url)
+{
+	sleep(2);
+	//http_request request(this->response,this->io_service);
+	int redirtimes = 0;
+
+	while ((this->response->getStatus() < 200) || (this->response->getStatus() >= 300)) {
+		// Send the HTTP request and receive the this->response.
+		this->send(url);
+		if ((this->response->getStatus() >= 300) && (this->response->getStatus() < 400)) {
+			/* Redirect */
+			if (redirtimes++ > 5) {
+				this->disconnect();
+				LogCritical() << "Redirection Failure. Redirected too many times";
+				return this->response;
+			}
+			std::string Location = this->response->getHeader("Location");
+			if (Location != "") {
+				LogTrace() << "Redirecting (" << this->response->getStatus() << ") to " << Location;
+				url = Location;
+				this->reset();
+			} else {
+				LogCritical() << "Redirection Failure (" << this->response->getStatus() << "). No Location Specified";
+				return this->response;
+			}
+		} else if ((this->response->getStatus() >= 400) && (this->response->getStatus() < 500)) {
+			LogCritical() << "Not Found (" << this->response->getStatus() << ") Error";
+			this->disconnect();
+			return this->response;
+		} else if ((this->response->getStatus() >= 500) && (this->response->getStatus() < 600)) {
+			LogCritical() << "Server Error (" << this->response->getStatus() << ") Error";
+			this->disconnect();
+			return this->response;
+		}
+	}
+	LogDebug() << "Response: " << this->response->getStatus();
+
+	//LogTrace() << "Body: " << this->response->getBody();
+	this->postbackio->post(boost::bind(&http_request::callback, this, this->response));
+	return this->response;
+}
+
+
+
+bool http_request::Starttransfer(std::string url) {
+	boost::packaged_task<http_response *> TransferStatus(boost::bind(&http_request::connect, this, url));
+	this->Status = TransferStatus.get_future();
+	boost::thread t(boost::move(TransferStatus));
+	return true;
+}
+bool http_request::setCallback(t_callbackFunc func) {
+	this->CallbackFunction = func;
+}
+
+void http_request::callback(http_response *res) {
+	if (this->CallbackFunction)
+		CallbackFunction(res);
 }
