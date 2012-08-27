@@ -1,3 +1,5 @@
+ACLOCAL_AMFLAGS = -I autotools
+include autotools/am_prog_doxygen.am
 bin_PROGRAMS = httpclient
 httpclient_SOURCES = httpclient.cpp	http_request.cpp	http_response.cpp
 httpclient_CXXFLAGS = -I/opt/local/include -I. -O0
