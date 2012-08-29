@@ -35,6 +35,6 @@ AC_CHECK_FUNCS([socket])
 
 CXXFLAGS="-g -O0"
 
-AC_CONFIG_FILES([Makefile docs/Makefile])
+AC_CONFIG_FILES([Makefile])
 
 AC_OUTPUT
