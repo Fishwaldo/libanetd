@@ -15,37 +15,34 @@
 #include <string>
 #include <vector>
 
+
 #include "http_response.h"
+
 
 /** @file */
 
-/*! \namespace boost::asio
- *  \brief The ASIO Classes 
- * 
- * The Boost ASIO Classes. 
- */
 
 /*! \mainpage HTTP Client
  *
  * \section introduction Introduction
  * This is the home of the HttpClient Library and Command Line Tool
- * 
+ *
  * This library implements a multithreaded http client that can be used via the command line, or embeded into other applications. It leverages the Boost Library for Multi Threaded and Network Support (boost::thread and boost::asio) and currently supports HTTP 1.0
- * 
+ *
  * Eventually, its planned to support a subset of HTTP 1.1 (Chunked Transfers), and HTTPS protocols as well as honoring System Configured Proxy Servers. Its aimed to be easily embeddable into existing applications with a simple API and a response class that allows the developer to customize what to do with the result that the client recieves. for example:
- * 
+ *
  * \li Save the result in Memory, with all associated headers and pass the result back to the application
  * \li Save the result into a file, and pass the headers and filename back to the application
  * \li Post-Process the RAW data (eg, XML) and do necessary decoding in a seperate thread before passing back the decoded data to the application.
- *             
+ *
  * \section example Example Code
  * Example Code that demonstrates how to use the http_request class with the standard http_response class.
  * This example demonstrates using the class in both Callback Mode as well as via the a boost::promise polling.
- * 
+ *
  * \link httpclient.cpp \endlink
- * 
+ *
  * \section seealso See Also
- * 
+ *
  * The http code makes extensive use of the boost::asio, boost::thread (for threading and promise support) boost::algorithm, boost::regex and boost::date_time classes
  * You need to link your application against the relevent boost libraries in order to fully support the http_request class
  *
@@ -55,13 +52,13 @@
  */
 
 /*! \namespace boost::asio
- *  \brief The Boost ASIO Classes 
- * 
- * The Boost ASIO Class Documentation can be read here: <a href=http://www.boost.org/libs/asio/>htpp://www.boost.org/libs/asio/</a> 
+ *  \brief The Boost ASIO Classes
+ *
+ * The Boost ASIO Class Documentation can be read here: <a href=http://www.boost.org/libs/asio/>htpp://www.boost.org/libs/asio/</a>
  *
  * \namespace boost::thread
  * \brief the Boost Threading Classes
- * 
+ *
  * The Boost Thread Class Documentation can be read here: <a href=http://www.boost.org/libs/thread/>http://www.boost.org/libs/thread/</a>
  *
  * \namespace boost::algorithm
@@ -71,7 +68,7 @@
  *
  * \namespace boost::regex
  * \brief the Boost Regular Expressions Classes
- * 
+ *
  * The Boost Regular Expression Class Documentation can be read here: <a href=http://www.boost.org/libs/regex/>http://www.boost.org/libs/regex/</a>
  *
  * \namespace boost::date_time
@@ -127,6 +124,9 @@
  *
  * \endcode
  */
+
+class http_response;
+
 class http_request
 {
 public:
@@ -142,7 +142,7 @@ public:
 	 *
 	 * Destruct the http_request Class
 	 */
-	
+
 	~http_request();
 	/*! \brief Reset the Requests to prepare for a new transfer
 	 *
@@ -152,7 +152,7 @@ public:
 	void reset();
 	/*! \brief Start the Transfer from a URL
 	 *
-	 * Starts a new transfer (in a new Thread) from the passed URL. 
+	 * Starts a new transfer (in a new Thread) from the passed URL.
 	 * The URL can be either a http or https site
 	 *
 	 * @param[in] url a string containing the full URL of the resource to be downloaded
@@ -161,7 +161,7 @@ public:
 	bool Starttransfer(std::string url);
 	/*! \brief Typedef of the Callback Function
 	 *
-	 * This is the typedef of the Callback Function. It accepts one arguement which is 
+	 * This is the typedef of the Callback Function. It accepts one arguement which is
 	 * a pointer to the http_response class that was passed in the http_request::http_request constructor
 	 */
 	typedef boost::function<void (http_response *)> t_callbackFunc;
@@ -261,7 +261,7 @@ inline std::string NowTime()
 
 #endif //WIN32
 
-/*! \typedef TLogLevels 
+/*! \typedef TLogLevels
  * \brief a Enum to indicate the Log Level to Log a message at
  * \relates LogClass
  */
@@ -279,12 +279,12 @@ class LogClass {
 public:
         /*! \brief LogClass Constructor
          *
-         * Default Constructor. 
+         * Default Constructor.
          */
 	LogClass() {  };
 	/*! \brief LogClass Descructor
 	 *
-	 * Default Destructor. Flushes the output to the Class provided as a template 
+	 * Default Destructor. Flushes the output to the Class provided as a template
 	 * paramater using the Output2StdErr::Output call.
 	 */
 	virtual ~LogClass() {
@@ -292,10 +292,10 @@ public:
     	    T::Output(os.str());
     	}
     	/*! \brief Get the LogCall Output Stream for Logging Messages
-    	 * 
-    	 * returns a output stream to the caller that users can then use to Log Messages 
+    	 *
+    	 * returns a output stream to the caller that users can then use to Log Messages
     	 * The Output Stream is not flushed till the LogClass::~LogClass destructor is called (either automatically when it goes out of scope) or by manually calling it
-    	 * 
+    	 *
     	 * This also prepends any messages, with a timestamp and a log level description
     	 *
     	 * @param[in] level - The Log Level To log the message at
@@ -310,7 +310,7 @@ public:
         /*! \brief Set (or Get) the minimum LogLevel to Log At
          *
          * this Sets or gets the LogLevel to Log Messages at
-         * 
+         *
          * @return the Current minimum LogLevel to report at. Defaults to LOG_TRACE
          */
         static TLogLevels& ReportingLevel() {
@@ -338,8 +338,8 @@ public:
          *
          * if the string can't be matched against a loglevel, then it defaults to LOG_WARN
          *
-         * @param[in] level - A string representation to search the LogLevels for 
-         * 
+         * @param[in] level - A string representation to search the LogLevels for
+         *
          * @return a Loglevel that matches the string.
          */
         static TLogLevels FromString(const std::string& level) {
@@ -376,7 +376,7 @@ class Output2StdErr
 {
 public:
     /*! \brief Open a Stream that can be used to Log Messages
-     * 
+     *
      * Opens a Stream that you want to Log To
      * @return a FILE stream to Log to. Use this in the Output2StdErr::Output function
      */
@@ -386,7 +386,7 @@ public:
     }
     /*! \brief Called by the LogClass to flush the output stream
      *
-     * This is called by the LogClass passing a string to flush to the Logs. 
+     * This is called by the LogClass passing a string to flush to the Logs.
      *
      * @param[in] msg The Message to Log
      */
@@ -418,12 +418,12 @@ class HTTPLOG_DECLSPEC HTTPLog : public LogClass<Output2StdErr> {};
 
 /*! \def LogTrace()
  * \relates LogClass
- * Log a Message at Trace Level 
+ * Log a Message at Trace Level
  */
 #define LogTrace() if (LOG_TRACE >= HTTPLog::ReportingLevel()) HTTPLog().Get(LOG_TRACE) LogFormat()
 /*! \def LogDebug()
  * \relates LogClass
- * Log a Message at Debug level 
+ * Log a Message at Debug level
  */
 #define LogDebug() if (LOG_DEBUG >= HTTPLog::ReportingLevel()) HTTPLog().Get(LOG_DEBUG) LogFormat()
 /*! \def LogWarn()
@@ -437,7 +437,7 @@ class HTTPLOG_DECLSPEC HTTPLog : public LogClass<Output2StdErr> {};
  */
 #define LogError() if (LOG_ERROR >= HTTPLog::ReportingLevel()) HTTPLog().Get(LOG_ERROR) LogFormat()
 /*! \def LogCritical()
- * Log a Message at the LogCritical Level 
+ * Log a Message at the LogCritical Level
  * \relates LogClass
  */
 #define LogCritical() if (LOG_CRITICAL >= HTTPLog::ReportingLevel()) HTTPLog().Get(LOG_CRITICAL) LogFormat()
