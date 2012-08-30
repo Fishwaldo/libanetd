@@ -1,6 +1,8 @@
 #include "http_response.h"
 
-http_response::http_response()
+#include <boost/interprocess/sync/scoped_lock.hpp>
+
+http_response::http_response(): body_size(0)
 {
 	this->reset();
 }
@@ -12,12 +14,14 @@ http_response::~http_response()
 
 void http_response::reset()
 {
+	boost::interprocess::scoped_lock<boost::mutex>(this->TLock);
 	this->version = "HTTP/1.0";
 	this->status = 0;
 	this->description = "OK";
 	this->headers.clear();
 	this->body_size = 0;
 	this->body = "";
+	this->progress = 0;
 }
 
 
@@ -57,26 +61,40 @@ std::map<std::string, std::string>::iterator http_response::getHeadersEnd() {
 }
 std::string http_response::getHeader(std::string key) {
     std::map<std::string, std::string>::iterator iter = this->headers.find(key);
-    if (iter != this->headers.end()) 
+    if (iter != this->headers.end())
         return iter->second;
     return "";
 }
 
-void http_response::setBodySize(int size) {
+void http_response::setBodySize(size_t size) {
+	boost::interprocess::scoped_lock<boost::mutex>(this->TLock);
     this->body_size = size;
 }
 
-int http_response::getBodySize() {
-    return this->body_size;
+size_t http_response::getBodySize() {
+	boost::interprocess::scoped_lock<boost::mutex>(this->TLock);
+	return this->body_size;
 }
 
 void http_response::setBody(std::string mybod) {
-    this->body += mybod;
+	boost::interprocess::scoped_lock<boost::mutex>(this->TLock);
+	this->body += mybod;
+	this->progress += mybod.length();
 }
 
-void http_response::setBodyAppend(char c) {
-    this->body += c;
+void http_response::setBody(char c) {
+	boost::interprocess::scoped_lock<boost::mutex>(this->TLock);
+	this->body += c;
+	this->progress++;
 }
 std::string http_response::getBody() {
-    return this->body;
+	boost::interprocess::scoped_lock<boost::mutex>(this->TLock);
+	return this->body;
+
+}
+
+size_t http_response::getProgress() {
+	boost::interprocess::scoped_lock<boost::mutex>(this->TLock);
+	return this->progress;
+}
 }

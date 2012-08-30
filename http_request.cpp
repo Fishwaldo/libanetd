@@ -381,7 +381,7 @@ void http_request::receive()
 					}
 					break;
 				case BODY:
-					this->response->setBodyAppend(*position++);
+					this->response->setBody(*position++);
 					if (this->response->getBody().length() == this->response->getBodySize())
 						parser_state = OK;
 					break;
