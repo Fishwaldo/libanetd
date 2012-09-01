@@ -3,13 +3,14 @@
 
 #include <boost/thread/mutex.hpp>
 
-
-
 #include <map>
 #include <string>
 #include "http_request.h"
 
 /** @file */
+
+namespace DynamX {
+namespace HttpClient {
 
 /*! \brief Basic Memory Only HTTP Result Class
  *
@@ -81,7 +82,7 @@ public:
 	std::map<std::string, std::string>::iterator getHeadersEnd();
 	/*! \brief Return the value associated with a Header
 	 *
-	 *  This returns the value associated with a particular header who´s name is passed as the first param. Returns empty if no such header exists
+	 *  This returns the value associated with a particular header whos name is passed as the first param. Returns empty if no such header exists
 	 *
 	 * @param[in] name The header value to return
 	 * @return a std::string containing the header value, or empty if no such header exists.
@@ -196,5 +197,9 @@ private:
 	std::map<std::string, std::string> cookies;
 	boost::mutex TLock;
 };
+
+}
+}
+
 
 #endif // HTTP_RESPONSE_H

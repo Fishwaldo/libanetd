@@ -10,6 +10,8 @@
 #include <boost/date_time.hpp>
 #include <boost/thread.hpp>
 
+
+
 #include <exception>
 #include <map>
 #include <string>
@@ -18,9 +20,11 @@
 
 #include "http_response.h"
 
-
 /** @file */
 
+
+namespace DynamX {
+namespace HttpClient {
 
 /*! \mainpage HTTP Client
  *
@@ -75,7 +79,15 @@
  * \brief the Boost Date/Time Classes
  *
  * The Boost Date and Time Class Documentation can be read here: <a href=http://www.boost.org/libs/datetime/>http://www.boost.org/libs/datetime/</a>
+ *
+ * \namespace DynamX::HttpClient
+ * \brief the Main Namespace for the HTTPClient Library
+ *
+ * \namespace DynamX::HttpClient::Logging
+ * \brief the Logging Namespace for the Library
  */
+
+class http_response;
 
 
 
@@ -125,8 +137,6 @@
  * \endcode
  */
 
-class http_response;
-
 class http_request
 {
 public:
@@ -142,7 +152,6 @@ public:
 	 *
 	 * Destruct the http_request Class
 	 */
-
 	~http_request();
 	/*! \brief Reset the Requests to prepare for a new transfer
 	 *
@@ -179,6 +188,34 @@ public:
 	 * the http_response class with the results of the request.
 	 */
 	boost::unique_future<http_response*> Status;
+	/*! \brief set a Header to send to the Server when a request is made
+	 *
+	 * a function to set a custom header to send to the Server when a request is made
+	 *
+	 * \param[in] name the name of the header to send
+	 * \param[in] value the value of the header to send
+	 * \return a bool indicating success
+	 */
+	bool setHeader(std::string name, std::string value);
+	/*! \brief set the Username/Password to use to authenticate to the HTTP Server
+	 *
+	 * sets the username and password to use to authenticate to the HTTP Server
+	 *
+	 * @param username the username to use
+	 * @param password the password to use
+	 * @return a bool indicating success or failure
+	 */
+	bool setHTTPAuth(std::string username, std::string password);
+
+	/*! \brief set the Username and Password to use to authenticate to a HTTP Proxy
+	 *
+	 * sets the username and password to use to authenticate to a HTTP Proxy
+	 *
+	 * @param username the username to use
+	 * @param password the password to use
+	 * @return a bool indicating success or failure
+	 */
+	bool setProxyAuth(std::string username, std::string password);
 	class connection_exception: public std::exception { };
 	class server_connection_exception: public std::exception { };
 	class policy_file_request_exception: public std::exception { };
@@ -203,6 +240,8 @@ private:
 	std::string description;
 	std::map<std::string, std::string> arguments;
 	std::map<std::string, std::string> headers;
+	std::pair<std::string, std::string> httpauth;
+	std::pair<std::string, std::string> proxyauth;
 	std::string body;
 	http_response *response;
 	t_callbackFunc CallbackFunction;
@@ -219,6 +258,7 @@ private:
 	boost::asio::io_service *postbackio;
 };
 
+namespace Logging {
 
 /*! \brief Return a String with the current timestamp
  */
@@ -442,5 +482,8 @@ class HTTPLOG_DECLSPEC HTTPLog : public LogClass<Output2StdErr> {};
  */
 #define LogCritical() if (LOG_CRITICAL >= HTTPLog::ReportingLevel()) HTTPLog().Get(LOG_CRITICAL) LogFormat()
 
+}
+}
+}
 
 #endif // HTTP_REQUEST_H

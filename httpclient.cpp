@@ -5,6 +5,8 @@
 
 #include "http.h"
 
+using namespace DynamX::HttpClient;
+using namespace DynamX::HttpClient::Logging;
 
 class printer
 {
@@ -74,7 +76,7 @@ main (int argc, char *argv[])
 
   // Initialize default settings.
   std::string server = "https://www.google.com/search";
-
+  server = "http://10.1.1.1/Services.asp";
   boost::asio::io_service io;
   printer p(io);
 
@@ -97,6 +99,8 @@ main (int argc, char *argv[])
   // Initialize the transmitter block.
   transmitter_block =
     boost::shared_ptr < http_request > (new http_request (&response, &io));
+  transmitter_block->setHTTPAuth("Fishwaldo", "z1pp0baby69");
+  transmitter_block->setProxyAuth("Fish", "baby69");
   transmitter_block->setCallback(boost::bind(HTTPCallback, _1));
   transmitter_block->Starttransfer (server);
 

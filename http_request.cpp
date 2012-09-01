@@ -1,6 +1,23 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/archive/iterators/base64_from_binary.hpp>
+#include <boost/archive/iterators/binary_from_base64.hpp>
+#include <boost/archive/iterators/transform_width.hpp>
+#include <boost/archive/iterators/insert_linebreaks.hpp>
+#include <boost/archive/iterators/remove_whitespace.hpp>
 #include "http_request.h"
+
+using namespace DynamX::HttpClient;
+using namespace DynamX::HttpClient::Logging;
+using namespace boost::archive::iterators;
+
+typedef insert_linebreaks<base64_from_binary<transform_width<std::string::const_iterator,6,8> >, 72 > it_base64_t;
+
+std::string Base64Encode(std::string s) {
+	std::string base64(it_base64_t(s.begin()),it_base64_t(s.end()));
+	base64.append((3-s.length()%3)%3, '=');
+	return base64;
+}
 
 
 std::string get_env(std::string const& name)
@@ -113,8 +130,15 @@ void http_request::send()
 		}
 	}
 	request += ' ' + this->version + "\r\n";
+	/* send the headers if needed */
 	for (std::map<std::string, std::string>::iterator header = this->headers.begin(); header != this->headers.end(); ++header)
 		request += header->first + ": " + header->second + "\r\n";
+	/* if we have a username, password stored, send that */
+	if (this->httpauth.first.length()>0)
+		request += "Authorization: Basic " + Base64Encode(this->httpauth.first +":"+this->httpauth.second) + "\r\n";
+	if ((this->http_proxy == HTTP_PROXY) && (this->proxyauth.first.length() > 0))
+		request += "Proxy-Authorization: Basic " + Base64Encode(this->proxyauth.first + ":" + this->proxyauth.second) + "\r\n";
+
 	request += "\r\n" + this->body;
 	LogTrace() << "Sending: " << request;
 	this->socksend(request);
@@ -173,7 +197,7 @@ void http_request::send(std::string absolute_url)
 		this->http_type = SSL_HTTPS;
 		if (port.empty())
 			port = "443";
-
+		char *data = new char[1024];
 		this->host = url_parts[0] + "://" + url_parts[1] + ":" + (url_parts[2].empty() ? "443" : url_parts[2]);
 
 		this->targeturl = url_parts[1] + ":" + port;
@@ -231,10 +255,13 @@ void http_request::send(std::string absolute_url)
 					/* if we are connecting through a proxy.... */
 					if (this->http_proxy == HTTP_PROXY) {
 						/* send our Proxy Headers */
-						std::string proxycmd = "CONNECT " + this->targeturl + " " + this->version + "\r\n\r\n";
-						char *data = new char[1024];
+						std::string proxycmd = "CONNECT " + this->targeturl + " " + this->version + "\r\n";
+						if (this->proxyauth.first.length() > 0)
+							proxycmd += "Proxy-Authorization: Basic " + Base64Encode(this->proxyauth.first + ":" + this->proxyauth.second) + "\r\n";
+						proxycmd += "\r\n";
 						LogTrace() << "Proxy Command: " << proxycmd;
 						this->sslsocket.next_layer().send(boost::asio::buffer(proxycmd.c_str(), proxycmd.length()));
+						char *data = new char[1024];
 						while (this->sslsocket.next_layer().read_some(boost::asio::buffer(data, 1024))) {
 							std::string proxyresponse(data);
 							//typedef  split_vector;
@@ -489,8 +516,6 @@ http_response *http_request::connect(std::string url)
 	return this->response;
 }
 
-
-
 bool http_request::Starttransfer(std::string url) {
 	boost::packaged_task<http_response *> TransferStatus(boost::bind(&http_request::connect, this, url));
 	this->Status = TransferStatus.get_future();
@@ -504,4 +529,21 @@ bool http_request::setCallback(t_callbackFunc func) {
 void http_request::callback(http_response *res) {
 	if (this->CallbackFunction)
 		CallbackFunction(res);
+}
+
+bool http_request::setHeader(std::string name, std::string value) {
+	if (this->headers.find(name) == this->headers.end())
+		return false;
+	std::pair<std::map<std::string, std::string>::iterator,bool> ret = this->headers.insert(std::pair<std::string, std::string>(name, value));
+	return ret.second;
+}
+bool http_request::setHTTPAuth(std::string username, std::string password) {
+	this->httpauth.first = username;
+	this->httpauth.second = password;
+	return true;
+}
+bool http_request::setProxyAuth(std::string username, std::string password) {
+	this->proxyauth.first = username;
+	this->proxyauth.second = password;
+	return true;
 }

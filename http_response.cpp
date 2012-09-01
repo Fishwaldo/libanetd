@@ -2,6 +2,8 @@
 
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
+using namespace DynamX::HttpClient;
+
 http_response::http_response(): body_size(0)
 {
 	this->reset();
@@ -97,4 +99,4 @@ size_t http_response::getProgress() {
 	boost::interprocess::scoped_lock<boost::mutex>(this->TLock);
 	return this->progress;
 }
-}
+
