@@ -20117,7 +20117,7 @@ done
 CXXFLAGS="-g -O0"
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile example/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile example/Makefile Doxyfile"
 
 
 cat >confcache <<\_ACEOF
@@ -21278,6 +21278,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "example/Makefile") CONFIG_FILES="$CONFIG_FILES example/Makefile" ;;
+    "Doxyfile") CONFIG_FILES="$CONFIG_FILES Doxyfile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

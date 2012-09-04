@@ -1,0 +1,14 @@
+This library implements a multithreaded http client that can be used via the
+command line, or embeded into other applications. It leverages the Boost
+Library for Multi Threaded and Network Support (boost::thread and
+boost::asio) and currently supports HTTP 1.0
+
+Eventually, its planned to support a subset of HTTP 1.1 (Chunked Transfers),
+and HTTPS protocols as well as honoring System Configured Proxy Servers. Its
+aimed to be easily embeddable into existing applications with a simple API
+and a response class that allows the developer to customize what to do with
+the result that the client recieves. for example:
+
+    Save the result in Memory, with all associated headers and pass the result back to the application
+    Save the result into a file, and pass the headers and filename back to the application
+    Post-Process the RAW data (eg, XML) and do necessary decoding in a seperate thread before passing back the decoded data to the application.
