@@ -5,7 +5,7 @@
 #include <boost/archive/iterators/transform_width.hpp>
 #include <boost/archive/iterators/insert_linebreaks.hpp>
 #include <boost/archive/iterators/remove_whitespace.hpp>
-#include "http_request.h"
+#include "HTTPClient/http_request.h"
 
 using namespace DynamX::HttpClient;
 using namespace DynamX::HttpClient::Logging;
