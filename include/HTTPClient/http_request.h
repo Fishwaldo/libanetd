@@ -153,7 +153,7 @@ class http_response;
  *
  *
  * \endcode
- */#if ((BOOST_VERSION > 104700)||(!defined(BOOST_ASIO_ENABLE_OLD_SSL)))
+ */
 
 class http_request
 {
