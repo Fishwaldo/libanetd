@@ -8,18 +8,17 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
-
 #include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
@@ -154,7 +153,7 @@ class http_response;
  *
  *
  * \endcode
- */
+ */#if ((BOOST_VERSION > 104700)||(!defined(BOOST_ASIO_ENABLE_OLD_SSL)))
 
 class http_request
 {
@@ -241,7 +240,9 @@ public:
 private:
 	size_t socksend(std::string data);
 	size_t sockget(char *data, size_t size);
+#if ((BOOST_VERSION > 104700)||(!defined(BOOST_ASIO_ENABLE_OLD_SSL)))
 	bool verify_callback(bool preverified, boost::asio::ssl::verify_context &vctx);
+#endif
 	void send();
 	void send(std::string absolute_url);
 	void receive();

@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -47,8 +47,11 @@ std::string get_env(std::string const& name)
    else return "";
 }
 
-
+#if ((BOOST_VERSION > 104700)||(!defined(BOOST_ASIO_ENABLE_OLD_SSL)))
 http_request::http_request(http_response *myresponse, boost::asio::io_service *postback) : io(), socket(this->io), ctx(boost::asio::ssl::context::sslv23), sslsocket(this->io, ctx) {
+#else
+http_request::http_request(http_response *myresponse, boost::asio::io_service *postback) : io(), socket(this->io), ctx(this->io, boost::asio::ssl::context::sslv23), sslsocket(this->io, ctx) {
+#endif
 	this->response = myresponse;
     this->reset();
 	this->postbackio = postback;
@@ -93,6 +96,7 @@ size_t http_request::socksend(std::string data) {
 			return this->sslsocket.write_some(boost::asio::buffer(data.c_str(), data.length()));
 			break;
 	}
+	return -1;
 }
 
 size_t http_request::sockget(char *data, size_t size) {
@@ -114,6 +118,7 @@ size_t http_request::sockget(char *data, size_t size) {
 			}
 			break;
 	}
+	return -1;
 }
 
 void http_request::send()
@@ -268,8 +273,13 @@ void http_request::send(std::string absolute_url)
 					this->socket.connect(endpoint);
 					break;
 				case SSL_HTTPS:
+#if ((BOOST_VERSION > 104700)||(!defined(BOOST_ASIO_ENABLE_OLD_SSL)))
 					this->sslsocket.set_verify_mode(boost::asio::ssl::context::verify_none);
 					this->sslsocket.set_verify_callback(boost::bind(&http_request::verify_callback, this, _1, _2));
+#else
+					this->ctx.set_verify_mode(boost::asio::ssl::context::verify_none);
+					//this->sslsocket.set_verify_callback(boost::bind(&http_request::verify_callback, this, _1, _2));
+#endif
 					this->sslsocket.lowest_layer().connect(endpoint);
 					/* if we are connecting through a proxy.... */
 					if (this->http_proxy == HTTP_PROXY) {
@@ -315,7 +325,7 @@ void http_request::send(std::string absolute_url)
 	this->send();
 
 }
-
+#if ((BOOST_VERSION > 104700)||(!defined(BOOST_ASIO_ENABLE_OLD_SSL)))
 bool http_request::verify_callback(bool preverified, boost::asio::ssl::verify_context &vctx) {
 	   char subject_name[256];
 	        X509* cert = X509_STORE_CTX_get_current_cert(vctx.native_handle());
@@ -325,7 +335,7 @@ bool http_request::verify_callback(bool preverified, boost::asio::ssl::verify_co
 	        return preverified;
 
 }
-
+#endif
 void http_request::receive()
 {
 	this->response->reset();
