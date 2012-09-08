@@ -47,7 +47,7 @@ std::string get_env(std::string const& name)
    else return "";
 }
 
-#if ((BOOST_VERSION > 104700)||(!defined(BOOST_ASIO_ENABLE_OLD_SSL)))
+#if BOOST_VERSION > 104700
 http_request::http_request(http_response *myresponse, boost::asio::io_service *postback) : io(), socket(this->io), ctx(boost::asio::ssl::context::sslv23), sslsocket(this->io, ctx) {
 #else
 http_request::http_request(http_response *myresponse, boost::asio::io_service *postback) : io(), socket(this->io), ctx(this->io, boost::asio::ssl::context::sslv23), sslsocket(this->io, ctx) {
@@ -273,7 +273,7 @@ void http_request::send(std::string absolute_url)
 					this->socket.connect(endpoint);
 					break;
 				case SSL_HTTPS:
-#if ((BOOST_VERSION > 104700)||(!defined(BOOST_ASIO_ENABLE_OLD_SSL)))
+#if BOOST_VERSION > 104700
 					this->sslsocket.set_verify_mode(boost::asio::ssl::context::verify_none);
 					this->sslsocket.set_verify_callback(boost::bind(&http_request::verify_callback, this, _1, _2));
 #else
@@ -325,7 +325,7 @@ void http_request::send(std::string absolute_url)
 	this->send();
 
 }
-#if ((BOOST_VERSION > 104700)||(!defined(BOOST_ASIO_ENABLE_OLD_SSL)))
+#if BOOST_VERSION > 104700
 bool http_request::verify_callback(bool preverified, boost::asio::ssl::verify_context &vctx) {
 	   char subject_name[256];
 	        X509* cert = X509_STORE_CTX_get_current_cert(vctx.native_handle());

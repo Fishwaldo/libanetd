@@ -240,7 +240,7 @@ public:
 private:
 	size_t socksend(std::string data);
 	size_t sockget(char *data, size_t size);
-#if ((BOOST_VERSION > 104700)||(!defined(BOOST_ASIO_ENABLE_OLD_SSL)))
+#if BOOST_VERSION > 104700
 	bool verify_callback(bool preverified, boost::asio::ssl::verify_context &vctx);
 #endif
 	void send();
