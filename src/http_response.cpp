@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -20,6 +20,8 @@
 #include "HTTPClient/http_response.h"
 
 #include <boost/interprocess/sync/scoped_lock.hpp>
+#include <boost/lexical_cast.hpp>
+
 
 using namespace DynamX::HttpClient;
 
@@ -43,6 +45,7 @@ void http_response::reset()
 	this->body_size = 0;
 	this->body = "";
 	this->progress = 0;
+	this->url = "";
 }
 
 
@@ -113,9 +116,92 @@ std::string http_response::getBody() {
 	return this->body;
 
 }
-
 size_t http_response::getProgress() {
 	boost::interprocess::scoped_lock<boost::mutex>(this->TLock);
 	return this->progress;
+}
+void http_response::flush() {
+	/* nothing in the base class */
+}
+
+std::string http_response::getURL() {
+	boost::interprocess::scoped_lock<boost::mutex>(this->TLock);
+	return this->url;
+}
+void http_response::setURL(std::string url) {
+	boost::interprocess::scoped_lock<boost::mutex>(this->TLock);
+	this->url = url;
+}
+
+
+
+
+http_response_file::http_response_file() : http_response() {
+}
+
+void http_response_file::reset() {
+	this->filename = "";
+	this->CloseFile();
+	http_response::reset();
+}
+
+void http_response_file::setURL(std::string url) {
+	std::vector<std::string> url_parts;
+	http_response::setURL(url);
+	boost::regex url_expression(
+		// protocol            host               port
+		"^(\?:([^:/\?#]+)://)\?(\\w+[^/\?#:]*)(\?::(\\d+))\?"
+		// path                file       parameters
+		"(/\?(\?:[^\?#/]*/)*)\?([^\?#]*)\?(\\\?(.*))\?"
+		);
+	boost::regex_split(std::back_inserter(url_parts), url, url_expression);
+	if (url_parts.size() >= 5) {
+		this->filename = url_parts[4];
+	}
+	this->CloseFile();
+}
+
+void http_response_file::flush() {
+	if (!this->opened)
+		if (!this->OpenFile())
+			return;
+	this->file << this->getBody();
+	this->file.flush();
+	this->body.clear();
+}
+
+bool http_response_file::OpenFile() {
+	int i = 1;
+	if (this->opened)
+		return true;
+	this->filepath = this->filename;
+	while (boost::filesystem::exists(this->filepath)) {
+		this->filepath = this->filename + "." + boost::lexical_cast<std::string>(static_cast<int>(i));
+		i++;
+	}
+	this->file.clear(std::iostream::goodbit);
+	this->file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
+	try {
+		std::cout << "about to open " << std::endl;
+
+//		this->file.open(this->filepath, std::ios_base::binary | std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::app);
+		this->file.open(this->filepath);
+	} catch (std::ios_base::failure e) {
+	    std::cout << "Exception opening/reading file" << e.what() << std::endl;;
+	}
+	if (this->file.is_open()) {
+		std::cout << "opened" << std::endl;
+		this->opened = true;
+		return true;
+	}
+	std::cout << "not opened" << std::endl;
+	return false;
+}
+bool http_response_file::CloseFile() {
+	this->opened = false;
+	this->filepath.clear();
+	this->filename = "";
+	this->file.close();
+	return true;
 }
 
