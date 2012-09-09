@@ -56,6 +56,16 @@ http_request::http_request(http_response *myresponse, boost::asio::io_service *p
     this->reset();
 	this->postbackio = postback;
 }
+#if BOOST_VERSION > 104700
+http_request::http_request(boost::asio::io_service *postback) : io(), socket(this->io), ctx(boost::asio::ssl::context::sslv23), sslsocket(this->io, ctx) {
+#else
+http_request::http_request(boost::asio::io_service *postback) : io(), socket(this->io), ctx(this->io, boost::asio::ssl::context::sslv23), sslsocket(this->io, ctx) {
+#endif
+	this->response = new http_response();
+	this->reset();
+	this->postbackio = postback;
+}
+
 
 http_request::~http_request()
 {
@@ -174,6 +184,8 @@ void http_request::send(std::string absolute_url)
 
 	// Parse the URL.
 	std::vector<std::string> url_parts;
+	std::string myurl(absolute_url);
+	this->response->reset();
 	boost::regex url_expression(
 		// protocol            host               port
 		"^(\?:([^:/\?#]+)://)\?(\\w+[^/\?#:]*)(\?::(\\d+))\?"
@@ -321,6 +333,9 @@ void http_request::send(std::string absolute_url)
 	if (!connected)
 		throw connection_exception();
 
+	this->response->setURL(myurl);
+
+
 	// Send the request.
 	this->send();
 
@@ -338,7 +353,7 @@ bool http_request::verify_callback(bool preverified, boost::asio::ssl::verify_co
 #endif
 void http_request::receive()
 {
-	this->response->reset();
+
 
 	http_response_parser_state parser_state = VERSION;
 
@@ -446,7 +461,7 @@ void http_request::receive()
 					break;
 				}
 			} while (position < buffer + bytes_read);
-
+			this->response->flush();
 		} while (parser_state != OK);
 
 	}
@@ -505,7 +520,7 @@ void http_request::disconnect()
 
 http_response *http_request::connect(std::string url)
 {
-	sleep(2);
+
 	//http_request request(this->response,this->io_service);
 	int redirtimes = 0;
 

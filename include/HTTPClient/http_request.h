@@ -166,6 +166,13 @@ public:
 	 * @param[in] postback this is the IO Service to use to post the callback on (the callback will run on threads that are calling the run() method on this IO Service
 	 */
 	http_request(http_response *response, boost::asio::io_service *postback);
+	/*! \brief Constructor
+	 *
+	 * Create and Initialize the http_request classes. Takes one paramaters. The response object is automatically created
+	 *
+	 * @param[in] postback this is the IO Service to use to post the callback on (the callback will run on threads that are calling the run() method on this IO Service
+	 */
+	http_request(boost::asio::io_service *postback);
 	/*! \brief Destructor
 	 *
 	 * Destruct the http_request Class
