@@ -24,6 +24,8 @@
 
 
 using namespace DynamX::HttpClient;
+using namespace DynamX::HttpClient::Logging;
+
 
 http_response::http_response(): body_size(0)
 {
@@ -133,7 +135,14 @@ void http_response::setURL(std::string url) {
 	this->url = url;
 }
 
+void http_response::clearBody() {
+	boost::interprocess::scoped_lock<boost::mutex>(this->TLock);
+	this->body.clear();
+}	
 
+void http_response::Completed() {
+
+}
 
 
 http_response_file::http_response_file() : http_response() {
@@ -143,6 +152,7 @@ void http_response_file::reset() {
 	this->filename = "";
 	this->CloseFile();
 	http_response::reset();
+	std::cout << "Reset" << std::endl;
 }
 
 void http_response_file::setURL(std::string url) {
@@ -158,6 +168,7 @@ void http_response_file::setURL(std::string url) {
 	if (url_parts.size() >= 5) {
 		this->filename = url_parts[4];
 	}
+	LogTrace() << "Filename set to:" << this->filename;
 	this->CloseFile();
 }
 
@@ -179,29 +190,21 @@ bool http_response_file::OpenFile() {
 		this->filepath = this->filename + "." + boost::lexical_cast<std::string>(static_cast<int>(i));
 		i++;
 	}
-	this->file.clear(std::iostream::goodbit);
-	this->file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
-	try {
-		std::cout << "about to open " << std::endl;
-
-//		this->file.open(this->filepath, std::ios_base::binary | std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::app);
-		this->file.open(this->filepath);
-	} catch (std::ios_base::failure e) {
-	    std::cout << "Exception opening/reading file" << e.what() << std::endl;;
-	}
+	LogTrace() << "About to open file: " << this->filepath;
+	this->file.open(this->filepath);
 	if (this->file.is_open()) {
-		std::cout << "opened" << std::endl;
 		this->opened = true;
 		return true;
 	}
-	std::cout << "not opened" << std::endl;
+	LogWarn() << "Could Not Open File: " << this->filepath;
 	return false;
 }
 bool http_response_file::CloseFile() {
 	this->opened = false;
-	this->filepath.clear();
-	this->filename = "";
 	this->file.close();
 	return true;
 }
 
+void http_response_file::Completed() {
+	this->CloseFile();
+}

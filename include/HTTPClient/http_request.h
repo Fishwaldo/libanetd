@@ -276,6 +276,8 @@ private:
 	enum http_proxy_enum { NONE, HTTP_PROXY, HTTPS_PROXY};
 	enum http_type_enum { PLAIN_HTTP, SSL_HTTPS};
 
+    int redirtimes;
+    
 	http_proxy_enum http_proxy;
 	http_type_enum http_type;
 	boost::asio::io_service io;
