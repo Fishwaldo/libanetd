@@ -422,9 +422,35 @@ void http_request::receive()
 						}
 						else
 						{
-						        this->response->setBodySize(0);
+                            this->response->setBodySize(0);
 							parser_state = BODY;
 						}
+                        /* once we get here, before starting the Body Download, Check the Status Return Value 
+                         * which might depend upon headers (eg, Location)
+                         */
+                        if ((this->response->getStatus() >= 300) && (this->response->getStatus() < 400)) {
+                            /* Redirect */
+                            if (this->redirtimes++ > 5) {
+                                this->disconnect();
+                                LogCritical() << "Redirection Failure. Redirected too many times";
+                                delete buffer;
+                                return;
+                            }
+                            std::string Location = this->response->getHeader("Location");
+                            if (Location != "") {
+                                LogTrace() << "Redirecting (" << this->response->getStatus() << ") to " << Location;
+                                this->reset();
+                                this->send(Location);
+                                delete buffer;
+                                return;
+                            } else {
+                                LogCritical() << "Redirection Failure (" << this->response->getStatus() << "). No Location Specified";
+                                delete buffer;
+                                return;
+                            }
+                        }
+                        
+                        
 					}
 					else if (*position == ':')
 						position++;
@@ -446,7 +472,7 @@ void http_request::receive()
 					{
 						position++;
 						LogTrace() << boost::this_thread::get_id() << "Header key: " << key << " value: " << value;
-                        this->response->setHeaders(key, value);
+						this->response->setHeaders(key, value);
 						key = "";
 						parser_state = HEADER_KEY;
 					}
@@ -469,6 +495,7 @@ void http_request::receive()
 	{
 		if (e.code() == boost::asio::error::eof) {
 			this->response->setBodySize(this->response->getBody().length());
+			this->response->Completed();
 		} else
 		{
 			delete buffer;
@@ -521,29 +548,11 @@ void http_request::disconnect()
 http_response *http_request::connect(std::string url)
 {
 
-	//http_request request(this->response,this->io_service);
-	int redirtimes = 0;
-
 	while ((this->response->getStatus() < 200) || (this->response->getStatus() >= 300)) {
 		// Send the HTTP request and receive the this->response.
 		this->send(url);
-		if ((this->response->getStatus() >= 300) && (this->response->getStatus() < 400)) {
-			/* Redirect */
-			if (redirtimes++ > 5) {
-				this->disconnect();
-				LogCritical() << "Redirection Failure. Redirected too many times";
-				return this->response;
-			}
-			std::string Location = this->response->getHeader("Location");
-			if (Location != "") {
-				LogTrace() << "Redirecting (" << this->response->getStatus() << ") to " << Location;
-				url = Location;
-				this->reset();
-			} else {
-				LogCritical() << "Redirection Failure (" << this->response->getStatus() << "). No Location Specified";
-				return this->response;
-			}
-		} else if ((this->response->getStatus() >= 400) && (this->response->getStatus() < 500)) {
+        /* redirect Headers are handled above in the recieve function */
+		if ((this->response->getStatus() >= 400) && (this->response->getStatus() < 500)) {
 			LogCritical() << "Not Found (" << this->response->getStatus() << ") Error";
 			this->disconnect();
 			return this->response;

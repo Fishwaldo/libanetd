@@ -218,6 +218,11 @@ protected:
 	 * Its called automatically as the data is recieved from the http server
 	 */
 	virtual void flush();
+	/*! \brief Clear the Body
+	 *
+	 * Used to clear the Body that has been downloaded so far
+	 */ 
+	virtual void clearBody();
 	/*! \brief Store the URL that is being downloaded
 	 *
 	 * used by the http_request class only, this function stores the URL that is being downloaded.
@@ -226,6 +231,12 @@ protected:
 	 * @param[in] url the URL as a sting
 	 */
 	virtual void setURL(std::string url);
+	/*! \brief Signal that the download has completed
+	 *
+	 * used by the http_request class only, this function indicates that the download is completed.
+	 * it is called automatically when the download has finished. Can be reimplemented in inherited classes to close a file handle for example
+	 */
+	virtual void Completed();
 
 	friend class http_request;
 	std::string version;
@@ -249,6 +260,7 @@ public:
 protected:
 	void flush();
 	void setURL(std::string url);
+	void Completed();
 private:
 	bool OpenFile();
 	bool CloseFile();
