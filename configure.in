@@ -1,8 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.68])
-AC_CONFIG_MACRO_DIR([autotools])
+AC_PREREQ([2.63])
+dnl AC_CONFIG_MACRO_DIR([autotools])
 AC_INIT([LibHTTPClient], [0.1], [bugs@dynam.ac])
 AM_INIT_AUTOMAKE([1.10 no-define foreign])
 AC_PROG_LIBTOOL
@@ -45,7 +45,7 @@ AX_BOOST_THREAD
 
 AX_BOOST_REGEX
 
-AX_CHECK_OPENSSL
+AX_CHECK_OPENSSL([], [AC_MSG_ERROR(OpenSSL Not Installed)])
 
 # Checks for header files.
 

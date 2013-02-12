@@ -15,3 +15,10 @@ DerivedData/
 .svn
 .DS_Store
 *~
+*.lo
+*.o
+.deps
+.libs
+Makefile
+*.in
+*.la
