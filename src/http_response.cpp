@@ -181,7 +181,7 @@ void http_response_file::setURL(std::string url) {
 	    this->filename = url_parts[3];
         }
 	LogTrace() << "Filename set to:" << this->filename;
-	this->CloseFile();
+	//this->CloseFile();
 }
 
 void http_response_file::flush() {
