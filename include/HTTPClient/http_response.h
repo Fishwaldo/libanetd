@@ -26,7 +26,7 @@
 
 #include <map>
 #include <string>
-#include "http_request.h"
+#include "http_response.h"
 
 /** @file */
 
@@ -36,8 +36,8 @@ namespace HttpClient {
 /*! \brief Basic Memory Only HTTP Result Class
  *
  * This is a basic http_response class that is used to store the results of a HTTP Transfer in memory and pass the results back to the client
- * The results of a transfer are sent back to the caller as either a parameter in the http_request::setCallback function, or via a boost::promise via the http_request::Status variable.
- * Regardless of the success or failure of a HTTP Transfer, the http_response class is always sent back. Clients can check the http_request::getStatus() function to retrieve a status
+ * The results of a transfer are sent back to the caller as either a parameter in the http_engine::setCallback function, or via a boost::promise via the http_engine::Status variable.
+ * Regardless of the success or failure of a HTTP Transfer, the http_response class is always sent back. Clients can check the http_engine::getStatus() function to retrieve a status
  * value that is either a HTTP response code (eg, 200 for a successful transfer) or a negative number in case of internal library error
  *
  * Unless specifically mentioned as ThreadSafe in the member function descriptions, you should not call any of these functions from a client application till the transfer is complete.
@@ -57,7 +57,7 @@ public:
 	virtual ~http_response();
 	/*! \brief Reset the Response Class to defaults
 	 *
-	 *  This function is called by the http_request class to reset this class to defaults. This may be due to restarting the download from a HTTP Redirect, or other actions that require a new request to be sent to the server.
+	 *  This function is called by the http_engine class to reset this class to defaults. This may be due to restarting the download from a HTTP Redirect, or other actions that require a new request to be sent to the server.
 	 *
 	 *  If subclassing this function, you should ensure that you your own class calls this base class, as well as reseting any variables that your own class may implement.
 	 *
@@ -142,10 +142,35 @@ public:
 	 * @return the URL being currently downloaded.
 	 */
 	virtual std::string getURL();
+	/*! \brief set a Header to send to the Server when a request is made
+	 *
+	 * a function to set a custom header to send to the Server when a request is made
+	 *
+	 * \param[in] name the name of the header to send
+	 * \param[in] value the value of the header to send
+	 * \return a bool indicating success
+	 */
+	bool setHeader(std::string name, std::string value);
+	/*! \brief set the Username/Password to use to authenticate to the HTTP Server
+	 *
+	 * sets the username and password to use to authenticate to the HTTP Server
+	 *
+	 * @param username the username to use
+	 * @param password the password to use
+	 * @return a bool indicating success or failure
+	 */
+	bool setHTTPAuth(std::string username, std::string password);
+	/*! \brief Store the URL that is being downloaded
+	 *
+	 * this function sets the URL to be downloaded.
+	 *
+	 * @param[in] url the URL as a sting
+	 */
+	virtual void setURL(std::string url);
 protected:
 	/*! \brief Set the Version of the HTTP Protocol used in the transfer
 	 *
-	 * Used by the http_request class only, this function sets the version of the transfer. If you need to perform
+	 * Used by the http_engine class only, this function sets the version of the transfer. If you need to perform
 	 * some custom action on the data depending upon the version, then you should reimplement this function, but be sure to call this base class function as well.
 	 *
 	 * @param[in] Version the HTTP Version
@@ -153,7 +178,7 @@ protected:
 	virtual void setVersion(std::string Version );
 	/*! \brief Set the Status of the HTTP Transfer
 	 *
-	 * Used by the http_request class only, this function sets the status of the transfer. If you need to perform
+	 * Used by the http_engine class only, this function sets the status of the transfer. If you need to perform
 	 * some custom action on the data depending upon the status, then you should reimplement this function, but be sure to call this base class function as well.
 	 *
 	 * Postive Numbers are Status Numbers returned from the HTTP Server.
@@ -165,7 +190,7 @@ protected:
 	virtual void setStatus(int Status);
 	/*! \brief Set the Description of the HTTP Protocol Response used in the transfer
 	 *
-	 * Used by the http_request class only, this function sets the Description of the transfer. If you need to perform
+	 * Used by the http_engine class only, this function sets the Description of the transfer. If you need to perform
 	 * some custom action on the data depending upon the Description, then you should reimplement this function, but be sure to call this base class function as well.
 	 *
 	 * @param[in] Description of the transfer
@@ -173,7 +198,7 @@ protected:
 	virtual void setDescription(std::string Description);
 	/*! \brief Set a Header returned by the HTTP Server
 	 *
-	 * Used by the http_request class only, this function is used to store Headers returned by the HTTP Server or Web Site. This includes cookies sent as well.
+	 * Used by the http_engine class only, this function is used to store Headers returned by the HTTP Server or Web Site. This includes cookies sent as well.
 	 * if you requrie some custom action on the data depending upon a header, then you should reimplement this function, but be sure to call this base class function as well.
 	 *
 	 * @param[in] Name the name of the header
@@ -182,9 +207,9 @@ protected:
 	virtual void setHeaders(std::string Name, std::string Value);
 	/*! \brief Set the Size of the Body of the HTTP Transfer
 	 *
-	 * Used by the http_request class only, this function sets the size of the Body of the transfer.
+	 * Used by the http_engine class only, this function sets the size of the Body of the transfer.
 	 *
-	 * Note, Some transfers will not send the size at the start of the transfer, so this function can sometimes be called when the http_request class is processing the headers (via the Content-Length Header)
+	 * Note, Some transfers will not send the size at the start of the transfer, so this function can sometimes be called when the http_engine class is processing the headers (via the Content-Length Header)
 	 * or at the end of the transfer after the library has completed the transfer.
 	 *
 	 * If you need to perform some custom action on the data depending upon the version, then you should reimplement this function, but be sure to call this base class function as well.
@@ -194,8 +219,8 @@ protected:
 	virtual void setBodySize(size_t Size);
 	/*! \brief Append a portion of the Body to the response_class result
 	 *
-	 * Used by the http_request class only, this function passes the current portion of the Body that the http_request class is processing. Depending up how the transfer happens, the
-	 * http_request class can either pass in the Body via this function, or by the setBody(char c) member function.
+	 * Used by the http_engine class only, this function passes the current portion of the Body that the http_engine class is processing. Depending up how the transfer happens, the
+	 * http_engine class can either pass in the Body via this function, or by the setBody(char c) member function.
 	 * If you need to perform some custom action on the data depending upon the version, then you should reimplement this function, but be sure to call this base class function as well.
 	 * 	Calling this function anytime during the transfer is ThreadSafe
 	 *
@@ -204,8 +229,8 @@ protected:
 	virtual void setBody(std::string Body);
 	/*! \brief Append a character of the Body to the response_class result
 	 *
-	 * Used by the http_request class only, this function passes the current character of the Body that the http_request class is processing. Depending up how the transfer happens, the
-	 * http_request class can either pass in the Body via this function, or by the setBody(std::string Body) member function.
+	 * Used by the http_engine class only, this function passes the current character of the Body that the http_engine class is processing. Depending up how the transfer happens, the
+	 * http_engine class can either pass in the Body via this function, or by the setBody(std::string Body) member function.
 	 * If you need to perform some custom action on the data depending upon the version, then you should reimplement this function, but be sure to call this base class function as well.
 	 * 	Calling this function anytime during the transfer is ThreadSafe
 	 *
@@ -214,41 +239,29 @@ protected:
 	virtual void setBody(char c);
 	/*! \brief Signal to the class it can flush the stream if necessary
 	 *
-	 * Used by the http_request class only, this function is called by the http_request class to indicate that the http_repsonse class can flush the data stream if necessary.
+	 * Used by the http_engine class only, this function is called by the http_engine class to indicate that the http_repsonse class can flush the data stream if necessary.
 	 * Its called automatically as the data is recieved from the http server
 	 */
 	virtual void flush();
-	/*! \brief Clear the Body
-	 *
-	 * Used to clear the Body that has been downloaded so far
-	 */ 
-	virtual void clearBody();
-	/*! \brief Store the URL that is being downloaded
-	 *
-	 * used by the http_request class only, this function stores the URL that is being downloaded.
-	 * it is called automatically once the URL is determined, and might be called multiple times if there are redirects involved.
-	 *
-	 * @param[in] url the URL as a sting
-	 */
-	virtual void setURL(std::string url);
-	/*! \brief Signal that the download has completed
-	 *
-	 * used by the http_request class only, this function indicates that the download is completed.
-	 * it is called automatically when the download has finished. Can be reimplemented in inherited classes to close a file handle for example
-	 */
-	virtual void Completed();
 
-	friend class http_request;
+	/*! \brief Signal that the Transfer has completed
+	 *
+	 */
+	virtual void completed();
+	std::string body;
+private:
+	friend class http_engine;
 	std::string version;
 	int status;
 	std::string description;
 	std::map<std::string, std::string> headers;
 	size_t body_size;
 	size_t progress;
-	std::string body;
 	std::map<std::string, std::string> cookies;
 	std::string url;
 	boost::mutex TLock;
+	std::map<std::string, std::string> sendheaders;
+	std::pair<std::string, std::string> httpauth;
 
 };
 
@@ -257,10 +270,10 @@ class http_response_file : public http_response {
 public:
 	http_response_file();
 	void reset();
+	void setURL(std::string url);
 protected:
 	void flush();
-	void setURL(std::string url);
-	void Completed();
+	void completed();
 private:
 	bool OpenFile();
 	bool CloseFile();

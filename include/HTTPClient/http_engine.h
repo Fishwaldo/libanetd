@@ -1,7 +1,7 @@
 #ifndef HTTP_REQUEST_H
 #define HTTP_REQUEST_H
 /*
- * include file for http_request Class in libHTTPClient
+ * include file for http_engine Class in libHTTPClient
  * Copyright (C) 2012 Justin Hammond
  *
  * This library is free software; you can redistribute it and/or
@@ -58,7 +58,7 @@ namespace HttpClient {
  * \li Post-Process the RAW data (eg, XML) and do necessary decoding in a seperate thread before passing back the decoded data to the application.
  *
  * \section example Example Code
- * Example Code that demonstrates how to use the http_request class with the standard http_response class.
+ * Example Code that demonstrates how to use the http_engine class with the standard http_response class.
  * This example demonstrates using the class in both Callback Mode as well as via the a boost::promise polling.
  *
  * \link httpclient.cpp \endlink
@@ -66,11 +66,11 @@ namespace HttpClient {
  * \section seealso See Also
  *
  * The http code makes extensive use of the boost::asio, boost::thread (for threading and promise support) boost::algorithm, boost::regex and boost::date_time classes
- * You need to link your application against the relevent boost libraries in order to fully support the http_request class
+ * You need to link your application against the relevent boost libraries in order to fully support the http_engine class
  *
  * The Homepage and Further Development Information can be found here: <a href=http://wiki.my-ho.st/confluence/display/HTC/HttpClient+Home>http://wiki.my-ho.st/confluence/display/HTC/HttpClient+Home</a>
  * \example httpclient.cpp
- * This is a example of using the http_request in both Callback and boost::unique_future mode
+ * This is a example of using the http_engine in both Callback and boost::unique_future mode
  */
 
 /*! \namespace boost::asio
@@ -116,7 +116,7 @@ class http_response;
  *
  * There are two implementations possible.
  * \li 1. Using a Callback function (via the setCallback() function) when the download completes
- * \li 2. using a boost::unique_future via the http_request::Status and either polling for the completion, or using the wait handlers
+ * \li 2. using a boost::unique_future via the http_engine::Status and either polling for the completion, or using the wait handlers
  *
  * An Example of using the Callback method:
  * \code
@@ -127,10 +127,10 @@ class http_response;
  *
  *	 void main() {
  *		boost::asio::io_service io;
- *		boost::shared_ptr < http_request > transmitter_block;
+ *		boost::shared_ptr < http_engine > transmitter_block;
  *		http_response response;
  *		// Initialize the transmitter block.
- *		transmitter_block = boost::shared_ptr < http_request > (new http_request (&response, &io));
+ *		transmitter_block = boost::shared_ptr < http_engine > (new http_engine (&response, &io));
  *		transmitter_block->setCallback(boost::bind(HTTPCallback, _1));
  *		transmitter_block->Starttransfer (server);
  *		// Assuming you do other stuff here, and add work to the io service
@@ -141,10 +141,10 @@ class http_response;
  * \code
  *	 void main() {
  *		boost::asio::io_service io;
- *		boost::shared_ptr < http_request > transmitter_block;
+ *		boost::shared_ptr < http_engine > transmitter_block;
  *		http_response response;
  *		// Initialize the transmitter block.
- *		transmitter_block = boost::shared_ptr < http_request > (new http_request (&response, &io));
+ *		transmitter_block = boost::shared_ptr < http_engine > (new http_engine (&response, &io));
  *		transmitter_block->Starttransfer (server);
  *		// Wait for the transfer to complete
  *		transmitter_block->Status.wait();
@@ -155,29 +155,21 @@ class http_response;
  * \endcode
  */
 
-class http_request
+class http_engine
 {
 public:
 	/*! \brief Constructor
 	 *
-	 * Create and Initialize the http_request classes. Takes two paramaters
-	 *
-	 * @param[in] response This is the class to store the results into and pass back via either the callback or unique_future interface
-	 * @param[in] postback this is the IO Service to use to post the callback on (the callback will run on threads that are calling the run() method on this IO Service
-	 */
-	http_request(http_response *response, boost::asio::io_service *postback);
-	/*! \brief Constructor
-	 *
-	 * Create and Initialize the http_request classes. Takes one paramaters. The response object is automatically created
+	 * Create and Initialize the http_engine classes. Takes one paramaters.
 	 *
 	 * @param[in] postback this is the IO Service to use to post the callback on (the callback will run on threads that are calling the run() method on this IO Service
 	 */
-	http_request(boost::asio::io_service *postback);
+	http_engine(boost::asio::io_service *postback);
 	/*! \brief Destructor
 	 *
-	 * Destruct the http_request Class
+	 * Destruct the http_engine Class
 	 */
-	~http_request();
+	~http_engine();
 	/*! \brief Reset the Requests to prepare for a new transfer
 	 *
 	 * Resets the Class back to defaults to prepare for a new HTTP transfer
@@ -192,19 +184,19 @@ public:
 	 * @param[in] url a string containing the full URL of the resource to be downloaded
 	 * \return Success or Failure of starting the transfer.
 	 */
-	bool Starttransfer(std::string url);
+	bool Starttransfer(http_response *myresponse);
 	/*! \brief Typedef of the Callback Function
 	 *
 	 * This is the typedef of the Callback Function. It accepts one arguement which is
-	 * a pointer to the http_response class that was passed in the http_request::http_request constructor
+	 * a pointer to the http_response class that was passed in the http_engine::http_engine constructor
 	 */
 	typedef boost::function<void (http_response *)> t_callbackFunc;
 	/*! \brief Set a Callback Function
 	 *
 	 * This sets a Callback Function that will be called when the request completes (regardless of success or failure)
-	 * The Callback Function will be executed on any thread that is calling boost::asio::io_service::run() on the postback IO service passed in the http_request::http_request constructor
+	 * The Callback Function will be executed on any thread that is calling boost::asio::io_service::run() on the postback IO service passed in the http_engine::http_engine constructor
 	 *
-	 * @param[in] func The Function to call when the request has completed. Function Signature must match the http_request::t_callbackFunc typedef
+	 * @param[in] func The Function to call when the request has completed. Function Signature must match the http_engine::t_callbackFunc typedef
 	 */
 	bool setCallback(t_callbackFunc); /**< a Member Function. Details */
 	/*! \brief a Boost::unique_future to indicate when the request has completed.
@@ -213,24 +205,6 @@ public:
 	 * the http_response class with the results of the request.
 	 */
 	boost::unique_future<http_response*> Status;
-	/*! \brief set a Header to send to the Server when a request is made
-	 *
-	 * a function to set a custom header to send to the Server when a request is made
-	 *
-	 * \param[in] name the name of the header to send
-	 * \param[in] value the value of the header to send
-	 * \return a bool indicating success
-	 */
-	bool setHeader(std::string name, std::string value);
-	/*! \brief set the Username/Password to use to authenticate to the HTTP Server
-	 *
-	 * sets the username and password to use to authenticate to the HTTP Server
-	 *
-	 * @param username the username to use
-	 * @param password the password to use
-	 * @return a bool indicating success or failure
-	 */
-	bool setHTTPAuth(std::string username, std::string password);
 
 	/*! \brief set the Username and Password to use to authenticate to a HTTP Proxy
 	 *
@@ -241,6 +215,7 @@ public:
 	 * @return a bool indicating success or failure
 	 */
 	bool setProxyAuth(std::string username, std::string password);
+
 	class connection_exception: public std::exception { };
 	class server_connection_exception: public std::exception { };
 	class policy_file_request_exception: public std::exception { };
@@ -250,13 +225,15 @@ private:
 #if BOOST_VERSION > 104700
 	bool verify_callback(bool preverified, boost::asio::ssl::verify_context &vctx);
 #endif
-	void send();
-	void send(std::string absolute_url);
-	void receive();
+	bool parse_status(int status);
+	bool parse_header();
+
+	bool send();
+	bool receive();
 	void disconnect();
 	void callback(http_response *res);
 	void clear();
-	http_response *connect(std::string url);
+	http_response *connect();
 
 	std::string method;
 	std::string host;
@@ -266,8 +243,6 @@ private:
 	int status;
 	std::string description;
 	std::map<std::string, std::string> arguments;
-	std::map<std::string, std::string> headers;
-	std::pair<std::string, std::string> httpauth;
 	std::pair<std::string, std::string> proxyauth;
 	std::string body;
 	http_response *response;
@@ -275,8 +250,7 @@ private:
 	enum http_response_parser_state { VERSION, STATUS, DESCRIPTION, HEADER_KEY, HEADER_VALUE, BODY, OK };
 	enum http_proxy_enum { NONE, HTTP_PROXY, HTTPS_PROXY};
 	enum http_type_enum { PLAIN_HTTP, SSL_HTTPS};
-
-    int redirtimes;
+	int redirtimes;
     
 	http_proxy_enum http_proxy;
 	http_type_enum http_type;
@@ -336,9 +310,9 @@ inline std::string NowTime()
  */
 typedef enum TLogLevels {LOG_TRACE, LOG_DEBUG, LOG_WARN, LOG_ERROR, LOG_CRITICAL} TLogLevels;
 
-/*! \brief A Logging Class to log actions from the http_request class
+/*! \brief A Logging Class to log actions from the http_engine class
  *
- * This is a generic logging class that takes messages from the http_request class
+ * This is a generic logging class that takes messages from the http_engine class
  * and logs them. The application can either use this class with the Output2StdErr class which will send
  * the output to the std::cerr stream, or can extend Output2StdErr class to write their own
  * output sink.
@@ -476,7 +450,7 @@ public:
 #   define HTTPLOG_DECLSPEC
 #endif // _WIN32
 
-/*! \brief The Logging Class that is used to Log Messages to. Used by various Macro's in the http_request class
+/*! \brief The Logging Class that is used to Log Messages to. Used by various Macro's in the http_engine class
  * \relates LogClass
  *
  * This is the Actual Implementation of the LogClass with the output sink Output2StdErr already configured

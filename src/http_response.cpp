@@ -17,10 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
-#include "HTTPClient/http_response.h"
-
+#include "HTTPClient/HTTPClientConfig.h"
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
+#include "HTTPClient/http_engine.h"
+#include "HTTPClient/http_response.h"
 
 
 using namespace DynamX::HttpClient;
@@ -125,7 +127,9 @@ size_t http_response::getProgress() {
 void http_response::flush() {
 	/* nothing in the base class */
 }
+void http_response::completed() {
 
+}
 std::string http_response::getURL() {
 	boost::interprocess::scoped_lock<boost::mutex>(this->TLock);
 	return this->url;
@@ -135,17 +139,23 @@ void http_response::setURL(std::string url) {
 	this->url = url;
 }
 
-void http_response::clearBody() {
-	boost::interprocess::scoped_lock<boost::mutex>(this->TLock);
-	this->body.clear();
-}	
-
-void http_response::Completed() {
-
+bool http_response::setHeader(std::string name, std::string value) {
+	if (this->sendheaders.find(name) == this->sendheaders.end())
+		return false;
+	std::pair<std::map<std::string, std::string>::iterator, bool> ret =
+			this->sendheaders.insert(
+					std::pair<std::string, std::string>(name, value));
+	return ret.second;
+}
+bool http_response::setHTTPAuth(std::string username, std::string password) {
+	this->httpauth.first = username;
+	this->httpauth.second = password;
+	return true;
 }
 
 
 http_response_file::http_response_file() : http_response() {
+	this->reset();
 }
 
 void http_response_file::reset() {
@@ -166,16 +176,18 @@ void http_response_file::setURL(std::string url) {
 		);
 	boost::regex_split(std::back_inserter(url_parts), url, url_expression);
 	if (url_parts.size() >= 5) {
-		this->filename = url_parts[4];
-	}
+    	    this->filename = url_parts[4];
+	} else if (url_parts.size() == 4) {
+	    this->filename = url_parts[3];
+        }
 	LogTrace() << "Filename set to:" << this->filename;
 	this->CloseFile();
 }
 
 void http_response_file::flush() {
-	if (!this->opened)
-		if (!this->OpenFile())
-			return;
+	if (!this->OpenFile()) {
+		return;
+	}
 	this->file << this->getBody();
 	this->file.flush();
 	this->body.clear();
@@ -185,13 +197,20 @@ bool http_response_file::OpenFile() {
 	int i = 1;
 	if (this->opened)
 		return true;
+
 	this->filepath = this->filename;
 	while (boost::filesystem::exists(this->filepath)) {
 		this->filepath = this->filename + "." + boost::lexical_cast<std::string>(static_cast<int>(i));
 		i++;
 	}
-	LogTrace() << "About to open file: " << this->filepath;
-	this->file.open(this->filepath);
+	this->file.clear(std::iostream::goodbit);
+	this->file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
+	try {
+//		this->file.open(this->filepath, std::ios_base::binary | std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::app);
+		this->file.open(this->filepath);
+	} catch (std::ios_base::failure e) {
+	    std::cout << "Exception opening/reading file" << e.what() << std::endl;;
+	}
 	if (this->file.is_open()) {
 		this->opened = true;
 		return true;
@@ -201,10 +220,14 @@ bool http_response_file::OpenFile() {
 }
 bool http_response_file::CloseFile() {
 	this->opened = false;
-	this->file.close();
+	this->filepath.clear();
+	this->filename = "";
+	if (this->file.is_open()) this->file.close();
 	return true;
 }
 
-void http_response_file::Completed() {
+void http_response_file::completed() {
 	this->CloseFile();
+	http_response::completed();
 }
+
