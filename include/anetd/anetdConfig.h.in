@@ -1,4 +1,4 @@
-/* include/HTTPClient/HTTPClientConfig.h.in.  Generated from configure.in by autoheader.  */
+/* include/anetd/anetdConfig.h.in.  Generated from configure.in by autoheader.  */
 
 /* define if the Boost library is available */
 #undef HAVE_BOOST
@@ -20,9 +20,6 @@
 
 /* define if the Boost::Serialization library is available */
 #undef HAVE_BOOST_SERIALIZATION
-
-/* define if the Boost::Signals library is available */
-#undef HAVE_BOOST_SIGNALS
 
 /* define if the Boost::System library is available */
 #undef HAVE_BOOST_SYSTEM

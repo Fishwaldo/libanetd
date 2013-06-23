@@ -26,7 +26,7 @@
 
 #include <map>
 #include <string>
-#include "http_response.h"
+#include "http_response.hpp"
 
 /** @file */
 

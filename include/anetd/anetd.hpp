@@ -21,7 +21,7 @@
  *
  */
 
-#include "http_engine.h"
-#include "http_response.h"
+#include "http_engine.hpp"
+#include "http_response.hpp"
 
 #endif // HTTP_H

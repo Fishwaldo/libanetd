@@ -21,8 +21,8 @@
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
-#include "anetd/http_engine.h"
-#include "anetd/http_response.h"
+#include "anetd/http_engine.hpp"
+#include "anetd/http_response.hpp"
 
 
 using namespace DynamX::anetd;
