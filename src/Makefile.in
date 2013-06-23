@@ -92,7 +92,6 @@ am__aclocal_m4_deps = $(top_srcdir)/autotools/ax_boost_asio.m4 \
 	$(top_srcdir)/autotools/ax_boost_program_options.m4 \
 	$(top_srcdir)/autotools/ax_boost_regex.m4 \
 	$(top_srcdir)/autotools/ax_boost_serialization.m4 \
-	$(top_srcdir)/autotools/ax_boost_signals.m4 \
 	$(top_srcdir)/autotools/ax_boost_system.m4 \
 	$(top_srcdir)/autotools/ax_boost_thread.m4 \
 	$(top_srcdir)/autotools/ax_check_openssl.m4 \
@@ -106,7 +105,7 @@ am__aclocal_m4_deps = $(top_srcdir)/autotools/ax_boost_asio.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = $(top_builddir)/include/HTTPClient/HTTPClientConfig.h
+CONFIG_HEADER = $(top_builddir)/include/anetd/anetdConfig.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -144,7 +143,7 @@ libHTTPClient_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1)
 am_libHTTPClient_la_OBJECTS = libHTTPClient_la-http_engine.lo \
 	libHTTPClient_la-http_response.lo
 libHTTPClient_la_OBJECTS = $(am_libHTTPClient_la_OBJECTS)
@@ -152,7 +151,7 @@ libHTTPClient_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) \
 	$(libHTTPClient_la_CXXFLAGS) $(CXXFLAGS) \
 	$(libHTTPClient_la_LDFLAGS) $(LDFLAGS) -o $@
-DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/include/HTTPClient
+DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/include/anetd
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
@@ -190,7 +189,6 @@ BOOST_LDFLAGS = @BOOST_LDFLAGS@
 BOOST_PROGRAM_OPTIONS_LIB = @BOOST_PROGRAM_OPTIONS_LIB@
 BOOST_REGEX_LIB = @BOOST_REGEX_LIB@
 BOOST_SERIALIZATION_LIB = @BOOST_SERIALIZATION_LIB@
-BOOST_SIGNALS_LIB = @BOOST_SIGNALS_LIB@
 BOOST_SYSTEM_LIB = @BOOST_SYSTEM_LIB@
 BOOST_THREAD_LIB = @BOOST_THREAD_LIB@
 CC = @CC@

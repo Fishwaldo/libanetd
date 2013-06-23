@@ -83,7 +83,7 @@ host_triplet = @host@
 DIST_COMMON = $(srcdir)/../autotools/am_prog_doxygen.am \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/depcomp
-bin_PROGRAMS = httpclient$(EXEEXT)
+bin_PROGRAMS = anetd$(EXEEXT)
 subdir = example
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/autotools/ax_boost_asio.m4 \
@@ -93,7 +93,6 @@ am__aclocal_m4_deps = $(top_srcdir)/autotools/ax_boost_asio.m4 \
 	$(top_srcdir)/autotools/ax_boost_program_options.m4 \
 	$(top_srcdir)/autotools/ax_boost_regex.m4 \
 	$(top_srcdir)/autotools/ax_boost_serialization.m4 \
-	$(top_srcdir)/autotools/ax_boost_signals.m4 \
 	$(top_srcdir)/autotools/ax_boost_system.m4 \
 	$(top_srcdir)/autotools/ax_boost_thread.m4 \
 	$(top_srcdir)/autotools/ax_check_openssl.m4 \
@@ -107,18 +106,18 @@ am__aclocal_m4_deps = $(top_srcdir)/autotools/ax_boost_asio.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = $(top_builddir)/include/HTTPClient/HTTPClientConfig.h
+CONFIG_HEADER = $(top_builddir)/include/anetd/anetdConfig.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_httpclient_OBJECTS = httpclient-httpclient.$(OBJEXT)
-httpclient_OBJECTS = $(am_httpclient_OBJECTS)
-httpclient_DEPENDENCIES = $(top_builddir)/src/libHTTPClient.la
-httpclient_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(httpclient_CXXFLAGS) \
-	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/include/HTTPClient
+am_anetd_OBJECTS = anetd-anetd.$(OBJEXT)
+anetd_OBJECTS = $(am_anetd_OBJECTS)
+anetd_DEPENDENCIES = $(top_builddir)/src/libHTTPClient.la
+anetd_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CXXLD) $(anetd_CXXFLAGS) $(CXXFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/include/anetd
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
@@ -131,8 +130,8 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(httpclient_SOURCES)
-DIST_SOURCES = $(httpclient_SOURCES)
+SOURCES = $(anetd_SOURCES)
+DIST_SOURCES = $(anetd_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -156,7 +155,6 @@ BOOST_LDFLAGS = @BOOST_LDFLAGS@
 BOOST_PROGRAM_OPTIONS_LIB = @BOOST_PROGRAM_OPTIONS_LIB@
 BOOST_REGEX_LIB = @BOOST_REGEX_LIB@
 BOOST_SERIALIZATION_LIB = @BOOST_SERIALIZATION_LIB@
-BOOST_SIGNALS_LIB = @BOOST_SIGNALS_LIB@
 BOOST_SYSTEM_LIB = @BOOST_SYSTEM_LIB@
 BOOST_THREAD_LIB = @BOOST_THREAD_LIB@
 CC = @CC@
@@ -322,9 +320,9 @@ ACLOCAL_AMFLAGS = -I autotools
 @DX_COND_doc_TRUE@    $(DX_CLEAN_PDF) \
 @DX_COND_doc_TRUE@    $(DX_CLEAN_LATEX)
 
-httpclient_SOURCES = httpclient.cpp
-httpclient_CXXFLAGS = -I$(top_srcdir)/include $(BOOST_CPPFLAGS) $(OPENSSL_INCLUDES)
-httpclient_LDADD = $(top_builddir)/src/libHTTPClient.la
+anetd_SOURCES = anetd.cpp
+anetd_CXXFLAGS = -I$(top_srcdir)/include $(BOOST_CPPFLAGS) $(OPENSSL_INCLUDES)
+anetd_LDADD = $(top_builddir)/src/libHTTPClient.la
 all: all-am
 
 .SUFFIXES:
@@ -406,9 +404,9 @@ clean-binPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-httpclient$(EXEEXT): $(httpclient_OBJECTS) $(httpclient_DEPENDENCIES) $(EXTRA_httpclient_DEPENDENCIES) 
-	@rm -f httpclient$(EXEEXT)
-	$(httpclient_LINK) $(httpclient_OBJECTS) $(httpclient_LDADD) $(LIBS)
+anetd$(EXEEXT): $(anetd_OBJECTS) $(anetd_DEPENDENCIES) $(EXTRA_anetd_DEPENDENCIES) 
+	@rm -f anetd$(EXEEXT)
+	$(anetd_LINK) $(anetd_OBJECTS) $(anetd_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -416,7 +414,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/httpclient-httpclient.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/anetd-anetd.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -439,19 +437,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
 
-httpclient-httpclient.o: httpclient.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(httpclient_CXXFLAGS) $(CXXFLAGS) -MT httpclient-httpclient.o -MD -MP -MF $(DEPDIR)/httpclient-httpclient.Tpo -c -o httpclient-httpclient.o `test -f 'httpclient.cpp' || echo '$(srcdir)/'`httpclient.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/httpclient-httpclient.Tpo $(DEPDIR)/httpclient-httpclient.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='httpclient.cpp' object='httpclient-httpclient.o' libtool=no @AMDEPBACKSLASH@
+anetd-anetd.o: anetd.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(anetd_CXXFLAGS) $(CXXFLAGS) -MT anetd-anetd.o -MD -MP -MF $(DEPDIR)/anetd-anetd.Tpo -c -o anetd-anetd.o `test -f 'anetd.cpp' || echo '$(srcdir)/'`anetd.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/anetd-anetd.Tpo $(DEPDIR)/anetd-anetd.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='anetd.cpp' object='anetd-anetd.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(httpclient_CXXFLAGS) $(CXXFLAGS) -c -o httpclient-httpclient.o `test -f 'httpclient.cpp' || echo '$(srcdir)/'`httpclient.cpp
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(anetd_CXXFLAGS) $(CXXFLAGS) -c -o anetd-anetd.o `test -f 'anetd.cpp' || echo '$(srcdir)/'`anetd.cpp
 
-httpclient-httpclient.obj: httpclient.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(httpclient_CXXFLAGS) $(CXXFLAGS) -MT httpclient-httpclient.obj -MD -MP -MF $(DEPDIR)/httpclient-httpclient.Tpo -c -o httpclient-httpclient.obj `if test -f 'httpclient.cpp'; then $(CYGPATH_W) 'httpclient.cpp'; else $(CYGPATH_W) '$(srcdir)/httpclient.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/httpclient-httpclient.Tpo $(DEPDIR)/httpclient-httpclient.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='httpclient.cpp' object='httpclient-httpclient.obj' libtool=no @AMDEPBACKSLASH@
+anetd-anetd.obj: anetd.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(anetd_CXXFLAGS) $(CXXFLAGS) -MT anetd-anetd.obj -MD -MP -MF $(DEPDIR)/anetd-anetd.Tpo -c -o anetd-anetd.obj `if test -f 'anetd.cpp'; then $(CYGPATH_W) 'anetd.cpp'; else $(CYGPATH_W) '$(srcdir)/anetd.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/anetd-anetd.Tpo $(DEPDIR)/anetd-anetd.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='anetd.cpp' object='anetd-anetd.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(httpclient_CXXFLAGS) $(CXXFLAGS) -c -o httpclient-httpclient.obj `if test -f 'httpclient.cpp'; then $(CYGPATH_W) 'httpclient.cpp'; else $(CYGPATH_W) '$(srcdir)/httpclient.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(anetd_CXXFLAGS) $(CXXFLAGS) -c -o anetd-anetd.obj `if test -f 'anetd.cpp'; then $(CYGPATH_W) 'anetd.cpp'; else $(CYGPATH_W) '$(srcdir)/anetd.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -724,7 +722,7 @@ uninstall-am: uninstall-binPROGRAMS
 @DX_COND_doc_TRUE@@DX_DOCDIR@/@PACKAGE@.tag: $(DX_CONFIG) $(pkginclude_HEADERS)
 @DX_COND_doc_TRUE@	rm -rf @DX_DOCDIR@
 @DX_COND_doc_TRUE@	$(DX_ENV) $(DX_DOXYGEN) $(srcdir)/$(DX_CONFIG)
-#httpclient_LDFLAGS = -L$(top_builddir)/src/
+#anetd_LDFLAGS = -L$(top_builddir)/src/
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

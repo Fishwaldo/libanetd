@@ -1,5 +1,5 @@
 /*
- * HTTP Request Processing for libHTTPClient
+ * HTTP Request Processing for libanetd
  * Copyright (C) 2012 Justin Hammond
  *
  * This library is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
-#include "HTTPClient/HTTPClientConfig.h"
+#include "anetd/anetdConfig.h"
 #include <string>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string.hpp>
@@ -26,10 +26,10 @@
 #include <boost/archive/iterators/transform_width.hpp>
 #include <boost/archive/iterators/insert_linebreaks.hpp>
 #include <boost/archive/iterators/remove_whitespace.hpp>
-#include "HTTPClient/http_engine.h"
+#include "anetd/http_engine.h"
 
-using namespace DynamX::HttpClient;
-using namespace DynamX::HttpClient::Logging;
+using namespace DynamX::anetd;
+using namespace DynamX::anetd::Logging;
 using namespace boost::archive::iterators;
 
 typedef insert_linebreaks<

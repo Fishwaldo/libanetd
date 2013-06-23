@@ -3,11 +3,11 @@
 
 AC_PREREQ([2.63])
 dnl AC_CONFIG_MACRO_DIR([autotools])
-AC_INIT([LibHTTPClient], [0.1], [bugs@dynam.ac])
+AC_INIT([Libanetd], [0.1], [bugs@dynam.ac])
 AM_INIT_AUTOMAKE([1.10 no-define foreign])
 AC_PROG_LIBTOOL
 AC_CONFIG_SRCDIR([src])
-AC_CONFIG_HEADERS([include/HTTPClient/HTTPClientConfig.h])
+AC_CONFIG_HEADERS([include/anetd/anetdConfig.h])
 
 # Checks for programs.
 AC_PROG_CXX
@@ -22,7 +22,7 @@ DX_RTF_FEATURE(OFF)
 DX_XML_FEATURE(OFF)
 DX_PDF_FEATURE(OFF)
 DX_PS_FEATURE(OFF)
-DX_INIT_DOXYGEN([HTTPClient],[Doxyfile],[doc])
+DX_INIT_DOXYGEN([libanetd],[Doxyfile],[doc])
 
 # Checks for libraries.
 AX_BOOST_BASE(1.37)
@@ -30,8 +30,6 @@ AX_BOOST_BASE(1.37)
 AX_BOOST_SYSTEM
 
 AX_BOOST_ASIO
-
-AX_BOOST_SIGNALS
 
 AX_BOOST_PROGRAM_OPTIONS
 

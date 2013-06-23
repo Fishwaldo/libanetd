@@ -84,9 +84,9 @@ DIST_COMMON = README $(am__configure_deps) $(include_HEADERS) \
 	$(srcdir)/Doxyfile.in $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/autotools/am_prog_doxygen.am \
 	$(top_srcdir)/configure \
-	$(top_srcdir)/include/HTTPClient/HTTPClientConfig.h.in AUTHORS \
-	ChangeLog NEWS config.guess config.sub depcomp install-sh \
-	ltmain.sh missing
+	$(top_srcdir)/include/anetd/anetdConfig.h.in AUTHORS ChangeLog \
+	NEWS config.guess config.sub depcomp install-sh ltmain.sh \
+	missing
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/autotools/ax_boost_asio.m4 \
@@ -96,7 +96,6 @@ am__aclocal_m4_deps = $(top_srcdir)/autotools/ax_boost_asio.m4 \
 	$(top_srcdir)/autotools/ax_boost_program_options.m4 \
 	$(top_srcdir)/autotools/ax_boost_regex.m4 \
 	$(top_srcdir)/autotools/ax_boost_serialization.m4 \
-	$(top_srcdir)/autotools/ax_boost_signals.m4 \
 	$(top_srcdir)/autotools/ax_boost_system.m4 \
 	$(top_srcdir)/autotools/ax_boost_thread.m4 \
 	$(top_srcdir)/autotools/ax_check_openssl.m4 \
@@ -112,7 +111,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = $(top_builddir)/include/HTTPClient/HTTPClientConfig.h
+CONFIG_HEADER = $(top_builddir)/include/anetd/anetdConfig.h
 CONFIG_CLEAN_FILES = Doxyfile
 CONFIG_CLEAN_VPATH_FILES =
 SOURCES =
@@ -224,7 +223,6 @@ BOOST_LDFLAGS = @BOOST_LDFLAGS@
 BOOST_PROGRAM_OPTIONS_LIB = @BOOST_PROGRAM_OPTIONS_LIB@
 BOOST_REGEX_LIB = @BOOST_REGEX_LIB@
 BOOST_SERIALIZATION_LIB = @BOOST_SERIALIZATION_LIB@
-BOOST_SIGNALS_LIB = @BOOST_SIGNALS_LIB@
 BOOST_SYSTEM_LIB = @BOOST_SYSTEM_LIB@
 BOOST_THREAD_LIB = @BOOST_THREAD_LIB@
 CC = @CC@
@@ -432,20 +430,20 @@ $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	$(am__cd) $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 $(am__aclocal_m4_deps):
 
-include/HTTPClient/HTTPClientConfig.h: include/HTTPClient/stamp-h1
-	@if test ! -f $@; then rm -f include/HTTPClient/stamp-h1; else :; fi
-	@if test ! -f $@; then $(MAKE) $(AM_MAKEFLAGS) include/HTTPClient/stamp-h1; else :; fi
+include/anetd/anetdConfig.h: include/anetd/stamp-h1
+	@if test ! -f $@; then rm -f include/anetd/stamp-h1; else :; fi
+	@if test ! -f $@; then $(MAKE) $(AM_MAKEFLAGS) include/anetd/stamp-h1; else :; fi
 
-include/HTTPClient/stamp-h1: $(top_srcdir)/include/HTTPClient/HTTPClientConfig.h.in $(top_builddir)/config.status
-	@rm -f include/HTTPClient/stamp-h1
-	cd $(top_builddir) && $(SHELL) ./config.status include/HTTPClient/HTTPClientConfig.h
-$(top_srcdir)/include/HTTPClient/HTTPClientConfig.h.in:  $(am__configure_deps) 
+include/anetd/stamp-h1: $(top_srcdir)/include/anetd/anetdConfig.h.in $(top_builddir)/config.status
+	@rm -f include/anetd/stamp-h1
+	cd $(top_builddir) && $(SHELL) ./config.status include/anetd/anetdConfig.h
+$(top_srcdir)/include/anetd/anetdConfig.h.in:  $(am__configure_deps) 
 	($(am__cd) $(top_srcdir) && $(AUTOHEADER))
-	rm -f include/HTTPClient/stamp-h1
+	rm -f include/anetd/stamp-h1
 	touch $@
 
 distclean-hdr:
-	-rm -f include/HTTPClient/HTTPClientConfig.h include/HTTPClient/stamp-h1
+	-rm -f include/anetd/anetdConfig.h include/anetd/stamp-h1
 Doxyfile: $(top_builddir)/config.status $(srcdir)/Doxyfile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 

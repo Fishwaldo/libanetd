@@ -1,5 +1,5 @@
 /*
- * HTTP Response Base class for libHTTPClient
+ * HTTP Response Base class for libanetd
  * Copyright (C) 2012 Justin Hammond
  *
  * This library is free software; you can redistribute it and/or
@@ -17,16 +17,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
-#include "HTTPClient/HTTPClientConfig.h"
+#include "anetd/anetdConfig.h"
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
-#include "HTTPClient/http_engine.h"
-#include "HTTPClient/http_response.h"
+#include "anetd/http_engine.h"
+#include "anetd/http_response.h"
 
 
-using namespace DynamX::HttpClient;
-using namespace DynamX::HttpClient::Logging;
+using namespace DynamX::anetd;
+using namespace DynamX::anetd::Logging;
 
 
 http_response::http_response(): body_size(0)
