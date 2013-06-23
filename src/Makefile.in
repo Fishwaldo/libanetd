@@ -138,19 +138,17 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-libHTTPClient_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+libanetd_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
-am_libHTTPClient_la_OBJECTS = libHTTPClient_la-http_engine.lo \
-	libHTTPClient_la-http_response.lo
-libHTTPClient_la_OBJECTS = $(am_libHTTPClient_la_OBJECTS)
-libHTTPClient_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) \
-	$(libHTTPClient_la_CXXFLAGS) $(CXXFLAGS) \
-	$(libHTTPClient_la_LDFLAGS) $(LDFLAGS) -o $@
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_libanetd_la_OBJECTS = libanetd_la-http_engine.lo \
+	libanetd_la-http_response.lo
+libanetd_la_OBJECTS = $(am_libanetd_la_OBJECTS)
+libanetd_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(libanetd_la_CXXFLAGS) \
+	$(CXXFLAGS) $(libanetd_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/include/anetd
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -164,8 +162,8 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libHTTPClient_la_SOURCES)
-DIST_SOURCES = $(libHTTPClient_la_SOURCES)
+SOURCES = $(libanetd_la_SOURCES)
+DIST_SOURCES = $(libanetd_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -354,11 +352,11 @@ ACLOCAL_AMFLAGS = -I autotools
 @DX_COND_doc_TRUE@    $(DX_CLEAN_PDF) \
 @DX_COND_doc_TRUE@    $(DX_CLEAN_LATEX)
 
-lib_LTLIBRARIES = libHTTPClient.la
-libHTTPClient_la_SOURCES = http_engine.cpp http_response.cpp
-libHTTPClient_la_CXXFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include/ $(BOOST_CPPFLAGS) $(OPENSSL_INCLUDES)
-libHTTPClient_la_LIBADD = $(BOOST_LDFLAGS) $(BOOST_ASIO_LIB) $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_SIGNALS_LIB) $(BOOST_SYSTEM_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_DATE_TIME_LIB) $(BOOST_SERIALIZATION_LIB) $(BOOST_THREAD_LIB) $(BOOST_REGEX_LIB) $(OPENSSL_LIBS) 
-libHTTPClient_la_LDFLAGS = $(OPENSSL_LDFLAGS) -version-info 1:0:0 -no-undefined
+lib_LTLIBRARIES = libanetd.la
+libanetd_la_SOURCES = http_engine.cpp http_response.cpp
+libanetd_la_CXXFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include/ $(BOOST_CPPFLAGS) $(OPENSSL_INCLUDES)
+libanetd_la_LIBADD = $(BOOST_LDFLAGS) $(BOOST_ASIO_LIB) $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_SIGNALS_LIB) $(BOOST_SYSTEM_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_DATE_TIME_LIB) $(BOOST_SERIALIZATION_LIB) $(BOOST_THREAD_LIB) $(BOOST_REGEX_LIB) $(OPENSSL_LIBS) 
+libanetd_la_LDFLAGS = $(OPENSSL_LDFLAGS) -version-info 1:0:0 -no-undefined
 all: all-am
 
 .SUFFIXES:
@@ -428,8 +426,8 @@ clean-libLTLIBRARIES:
 	  echo rm -f $${locs}; \
 	  rm -f $${locs}; \
 	}
-libHTTPClient.la: $(libHTTPClient_la_OBJECTS) $(libHTTPClient_la_DEPENDENCIES) $(EXTRA_libHTTPClient_la_DEPENDENCIES) 
-	$(libHTTPClient_la_LINK) -rpath $(libdir) $(libHTTPClient_la_OBJECTS) $(libHTTPClient_la_LIBADD) $(LIBS)
+libanetd.la: $(libanetd_la_OBJECTS) $(libanetd_la_DEPENDENCIES) $(EXTRA_libanetd_la_DEPENDENCIES) 
+	$(libanetd_la_LINK) -rpath $(libdir) $(libanetd_la_OBJECTS) $(libanetd_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -437,8 +435,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libHTTPClient_la-http_engine.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libHTTPClient_la-http_response.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libanetd_la-http_engine.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libanetd_la-http_response.Plo@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -461,19 +459,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
 
-libHTTPClient_la-http_engine.lo: http_engine.cpp
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libHTTPClient_la_CXXFLAGS) $(CXXFLAGS) -MT libHTTPClient_la-http_engine.lo -MD -MP -MF $(DEPDIR)/libHTTPClient_la-http_engine.Tpo -c -o libHTTPClient_la-http_engine.lo `test -f 'http_engine.cpp' || echo '$(srcdir)/'`http_engine.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libHTTPClient_la-http_engine.Tpo $(DEPDIR)/libHTTPClient_la-http_engine.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='http_engine.cpp' object='libHTTPClient_la-http_engine.lo' libtool=yes @AMDEPBACKSLASH@
+libanetd_la-http_engine.lo: http_engine.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libanetd_la_CXXFLAGS) $(CXXFLAGS) -MT libanetd_la-http_engine.lo -MD -MP -MF $(DEPDIR)/libanetd_la-http_engine.Tpo -c -o libanetd_la-http_engine.lo `test -f 'http_engine.cpp' || echo '$(srcdir)/'`http_engine.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libanetd_la-http_engine.Tpo $(DEPDIR)/libanetd_la-http_engine.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='http_engine.cpp' object='libanetd_la-http_engine.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libHTTPClient_la_CXXFLAGS) $(CXXFLAGS) -c -o libHTTPClient_la-http_engine.lo `test -f 'http_engine.cpp' || echo '$(srcdir)/'`http_engine.cpp
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libanetd_la_CXXFLAGS) $(CXXFLAGS) -c -o libanetd_la-http_engine.lo `test -f 'http_engine.cpp' || echo '$(srcdir)/'`http_engine.cpp
 
-libHTTPClient_la-http_response.lo: http_response.cpp
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libHTTPClient_la_CXXFLAGS) $(CXXFLAGS) -MT libHTTPClient_la-http_response.lo -MD -MP -MF $(DEPDIR)/libHTTPClient_la-http_response.Tpo -c -o libHTTPClient_la-http_response.lo `test -f 'http_response.cpp' || echo '$(srcdir)/'`http_response.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libHTTPClient_la-http_response.Tpo $(DEPDIR)/libHTTPClient_la-http_response.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='http_response.cpp' object='libHTTPClient_la-http_response.lo' libtool=yes @AMDEPBACKSLASH@
+libanetd_la-http_response.lo: http_response.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libanetd_la_CXXFLAGS) $(CXXFLAGS) -MT libanetd_la-http_response.lo -MD -MP -MF $(DEPDIR)/libanetd_la-http_response.Tpo -c -o libanetd_la-http_response.lo `test -f 'http_response.cpp' || echo '$(srcdir)/'`http_response.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libanetd_la-http_response.Tpo $(DEPDIR)/libanetd_la-http_response.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='http_response.cpp' object='libanetd_la-http_response.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libHTTPClient_la_CXXFLAGS) $(CXXFLAGS) -c -o libHTTPClient_la-http_response.lo `test -f 'http_response.cpp' || echo '$(srcdir)/'`http_response.cpp
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libanetd_la_CXXFLAGS) $(CXXFLAGS) -c -o libanetd_la-http_response.lo `test -f 'http_response.cpp' || echo '$(srcdir)/'`http_response.cpp
 
 mostlyclean-libtool:
 	-rm -f *.lo

@@ -388,7 +388,7 @@ ACLOCAL_AMFLAGS = -I autotools
 @DX_COND_doc_TRUE@    $(DX_CLEAN_PDF) \
 @DX_COND_doc_TRUE@    $(DX_CLEAN_LATEX)
 
-include_HEADERS = include/HTTPClient/HTTPClient.hpp include/HTTPClient/http_engine.h include/HTTPClient/http_response.h
+include_HEADERS = include/anetd/anetd.hpp include/anetd/http_engine.h include/anetd/http_response.h
 SUBDIRS = src example
 EXTRA_DIST = Doxyfile.in LICENSE
 all: all-recursive

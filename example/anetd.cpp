@@ -1,5 +1,5 @@
 /*
- * Example Client for libHTTPClient
+ * Example Client for libanetd
  * Copyright (C) 2012 Justin Hammond
  *
  * This library is free software; you can redistribute it and/or
@@ -24,10 +24,10 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include "HTTPClient/HTTPClient.hpp"
+#include "anetd/anetd.hpp"
 
-using namespace DynamX::HttpClient;
-using namespace DynamX::HttpClient::Logging;
+using namespace DynamX::anetd;
+using namespace DynamX::anetd::Logging;
 
 class printer
 {

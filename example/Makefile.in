@@ -113,7 +113,7 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_anetd_OBJECTS = anetd-anetd.$(OBJEXT)
 anetd_OBJECTS = $(am_anetd_OBJECTS)
-anetd_DEPENDENCIES = $(top_builddir)/src/libHTTPClient.la
+anetd_DEPENDENCIES = $(top_builddir)/src/libanetd.la
 anetd_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(anetd_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -322,7 +322,7 @@ ACLOCAL_AMFLAGS = -I autotools
 
 anetd_SOURCES = anetd.cpp
 anetd_CXXFLAGS = -I$(top_srcdir)/include $(BOOST_CPPFLAGS) $(OPENSSL_INCLUDES)
-anetd_LDADD = $(top_builddir)/src/libHTTPClient.la
+anetd_LDADD = $(top_builddir)/src/libanetd.la
 all: all-am
 
 .SUFFIXES:
