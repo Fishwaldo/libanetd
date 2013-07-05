@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libanetd
+Description: Client Library for another network downloader
+URL: http://wiki.my-ho.st/confluence/display/HTC/HttpClient+Home
+Version: @VERSION@
+Libs: -L${libdir} -lanetd
