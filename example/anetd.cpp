@@ -96,8 +96,10 @@ main (int argc, char *argv[])
 {
 
   // Initialize default settings.
-  std::string server = "https://www.google.com/search";
+  //std::string server = "https://www.google.com/search";
   //server = "http://10.1.1.1/Services.asp";
+  std::string server = "http://weather.yahooapis.com/forecastrss?w=2502265&u=c";
+  
   boost::asio::io_service io;
   printer p(io);
 

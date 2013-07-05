@@ -304,8 +304,17 @@ bool http_engine::send() {
 		request = this->method + ' ' + this->host + this->url;
 		break;
 	}
+	if (url_parts[5].length() > 0) {
+	    request += url_parts[5];
+	} 
+	
 	if (arguments.begin() != arguments.end()) {
-		request += '?';
+		if (url_parts[5].length() > 0) {
+		    request += '&';
+		} else {
+    		    request += '?';
+                }
+		
 		bool first = true;
 		for (std::map<std::string, std::string>::iterator argument =
 				this->arguments.begin(); argument != this->arguments.end();
@@ -340,7 +349,9 @@ bool http_engine::send() {
 						this->proxyauth.first + ":" + this->proxyauth.second)
 				+ "\r\n";
 
-	request += "\r\n" + this->body;
+        request += "Accept: */*\r\n";
+        request += "Connection: close\r\n";
+	request += "\r\n\r\n" + this->body;
 	LogTrace() << "Sending: " << request;
 	this->socksend(request);
 	return this->receive();
