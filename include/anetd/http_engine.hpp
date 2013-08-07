@@ -247,7 +247,7 @@ private:
 	std::string body;
 	http_response *response;
 	t_callbackFunc CallbackFunction;
-	enum http_response_parser_state { VERSION, STATUS, DESCRIPTION, HEADER_KEY, HEADER_VALUE, BODY, OK };
+	enum http_response_parser_state { ANETD_VERSION, ANETD_STATUS, ANETD_DESCRIPTION, ANETD_HEADER_KEY, ANETD_HEADER_VALUE, ANETD_BODY, ANETD_OK };
 	enum http_proxy_enum { NONE, HTTP_PROXY, HTTPS_PROXY};
 	enum http_type_enum { PLAIN_HTTP, SSL_HTTPS};
 	int redirtimes;
