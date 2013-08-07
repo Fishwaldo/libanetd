@@ -216,6 +216,15 @@ public:
 	 */
 	bool setProxyAuth(std::string username, std::string password);
 
+	/*! \brief Return if the Transfer has completed (does not indicate errors though)
+	 * 
+	 * Returns if the transfer has complete, but does not indicate if its a successfull transfer 
+	 * Check the response class for the actual Transfer Status
+	 *
+	 * @return a bool indicating Success or Failure 
+	 */
+	bool getCompletion();
+
 	class connection_exception: public std::exception { };
 	class server_connection_exception: public std::exception { };
 	class policy_file_request_exception: public std::exception { };

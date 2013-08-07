@@ -659,3 +659,10 @@ bool http_engine::setProxyAuth(std::string username, std::string password) {
 	this->proxyauth.second = password;
 	return true;
 }
+
+bool http_engine::getCompletion() {
+	if (this->Status.is_ready()) 
+		return true;
+	else
+		return false;
+}
