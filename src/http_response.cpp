@@ -23,10 +23,11 @@
 #include <boost/regex.hpp>
 #include "anetd/http_engine.hpp"
 #include "anetd/http_response.hpp"
+#include "anetd/LogClass.hpp"
 
 
 using namespace DynamX::anetd;
-using namespace DynamX::anetd::Logging;
+using namespace DynamX::Logging;
 
 
 http_response::http_response(): body_size(0)
@@ -180,7 +181,7 @@ void http_response_file::setURL(std::string url) {
 	} else if (url_parts.size() == 4) {
 	    this->filename = url_parts[3];
         }
-	LogTrace() << "Filename set to:" << this->filename;
+	LogDebug(std::string("Filename set to: ").append(this->filename));
 	//this->CloseFile();
 }
 
@@ -197,7 +198,6 @@ bool http_response_file::OpenFile() {
 	int i = 1;
 	if (this->opened)
 		return true;
-
 	this->filepath = this->filename;
 	while (boost::filesystem::exists(this->filepath)) {
 		this->filepath = this->filename + "." + boost::lexical_cast<std::string>(static_cast<int>(i));
@@ -209,13 +209,13 @@ bool http_response_file::OpenFile() {
 //		this->file.open(this->filepath, std::ios_base::binary | std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::app);
 		this->file.open(this->filepath);
 	} catch (std::ios_base::failure e) {
-	    std::cout << "Exception opening/reading file" << e.what() << std::endl;;
+	    LogWarn(std::string("Exception opening/reading file: ").append(e.what()));
 	}
 	if (this->file.is_open()) {
 		this->opened = true;
 		return true;
 	}
-	LogWarn() << "Could Not Open File: " << this->filepath;
+	LogWarn(std::string("Could Not Open File: ").append(boost::lexical_cast<std::string>(this->filepath)));
 	return false;
 }
 bool http_response_file::CloseFile() {

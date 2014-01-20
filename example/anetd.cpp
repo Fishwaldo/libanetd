@@ -25,9 +25,10 @@
 #include <boost/shared_ptr.hpp>
 
 #include "anetd/anetd.hpp"
+#include "anetd/LogClass.hpp"
 
 using namespace DynamX::anetd;
-using namespace DynamX::anetd::Logging;
+using namespace DynamX::Logging;
 
 class printer
 {
@@ -47,7 +48,7 @@ public:
    ~printer ()
   {
 
-    LogTrace() << "Final count is " << count_;
+    LogDebug(boost::str(boost::format("Final count is %1%") % count_));
 
   }
 
@@ -59,7 +60,7 @@ public:
 
       {
 
-	LogTrace() << "Timer 1: " << count_ ;
+	LogDebug(boost::str(boost::format("Timer 1: %1%") % count_));
 
 	++count_;
 
@@ -85,21 +86,42 @@ private:
 };
 
 void HTTPCallback(http_response *response) {
-	LogTrace() << response->getStatus();
+	LogDebug(response->getStatus());
 }
 
+		class MyLogImpl : public i_LogImpl
+		{
+public:
+			friend class Log;
 
+			MyLogImpl( std::string const& _filename, bool const _bConsoleOutput, LogLevel const _saveLevel): i_LogImpl(_filename,_bConsoleOutput,_saveLevel ) {
+				std::cout << "start" << std::endl;
+			};
+			~MyLogImpl() {};
+			private:
+			void Write( LogLevel _level, std::string message ) { std::cout << message << std::endl; };
+			void SetLoggingState( LogLevel _saveLevel) {}
+			void SetLogFileName( std::string _filename ){}
+
+			LogLevel m_saveLevel;
+			bool m_bConsoleOutput;
+		};
 
 // Application entry point.
 int
 main (int argc, char *argv[])
 {
 
+  //Log::SetLoggingClass(new MyLogImpl("", true, LogLevel_Error));
+  Log::Create("", true, LogLevel_Debug);
+
+
+
   // Initialize default settings.
   //std::string server = "https://www.google.com/search";
   //server = "http://10.1.1.1/Services.asp";
   std::string server = "http://weather.yahooapis.com/forecastrss?w=2502265&u=c";
-  
+
   boost::asio::io_service io;
   printer p(io);
 

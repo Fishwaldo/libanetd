@@ -27,9 +27,10 @@
 #include <boost/archive/iterators/insert_linebreaks.hpp>
 #include <boost/archive/iterators/remove_whitespace.hpp>
 #include "anetd/http_engine.hpp"
+#include "anetd/LogClass.hpp"
 
 using namespace DynamX::anetd;
-using namespace DynamX::anetd::Logging;
+using namespace DynamX::Logging;
 using namespace boost::archive::iterators;
 
 typedef insert_linebreaks<
@@ -171,8 +172,7 @@ bool http_engine::send() {
 					"^(\?:([^:/\?#]+)://)\?(\\w+[^/\?#:]*)(\?::(\\d+))\?");
 			boost::regex_split(std::back_inserter(proxy_parts), proxy,
 					proxy_expression);
-			LogDebug() << "Connecting Via HTTP Proxy at: " << proxy_parts[0]
-					<< "://" << proxy_parts[1] << ":" << proxy_parts[2];
+			LogDebug(boost::str(boost::format("Connecting Via HTTP Proxy at: %1%://%2%:%3%") % proxy_parts[0] % proxy_parts[1] % proxy_parts[2]));
 			host = proxy_parts[1];
 			port = proxy_parts[2];
 			this->http_proxy = HTTP_PROXY;
@@ -197,8 +197,8 @@ bool http_engine::send() {
 					"^(\?:([^:/\?#]+)://)\?(\\w+[^/\?#:]*)(\?::(\\d+))\?");
 			boost::regex_split(std::back_inserter(proxy_parts), proxy,
 					proxy_expression);
-			LogDebug() << "Connecting Via HTTPS Proxy at: " << proxy_parts[0]
-					<< "://" << proxy_parts[1] << ":" << proxy_parts[2];
+			LogDebug(boost::str(boost::format("Connecting Via HTTPS Proxy at: %1%://%2%:%3%") % proxy_parts[0] % proxy_parts[1] % proxy_parts[2]));
+
 			host = proxy_parts[1];
 			port = proxy_parts[2];
 			this->http_proxy = HTTP_PROXY;
@@ -251,7 +251,7 @@ bool http_engine::send() {
 												+ this->proxyauth.second)
 								+ "\r\n";
 					proxycmd += "\r\n";
-					LogTrace() << "Proxy Command: " << proxycmd;
+					LogDebug(std::string("Proxy Command: ").append(proxycmd));
 					this->sslsocket.next_layer().send(
 							boost::asio::buffer(proxycmd.c_str(),
 									proxycmd.length()));
@@ -281,8 +281,7 @@ bool http_engine::send() {
 			connected = true;
 			break;
 		} catch (boost::system::system_error& ec) {
-			LogCritical() << "Error Connecting to " << this->url << ": "
-					<< ec.what();
+			LogError(boost::str(boost::format("Error Connecting to %1%: %2%") % this->url % ec.what()));
 		}
 	}
 	// Check if the connection is successful.
@@ -306,15 +305,15 @@ bool http_engine::send() {
 	}
 	if (url_parts[5].length() > 0) {
 	    request += url_parts[5];
-	} 
-	
+	}
+
 	if (arguments.begin() != arguments.end()) {
 		if (url_parts[5].length() > 0) {
 		    request += '&';
 		} else {
     		    request += '?';
                 }
-		
+
 		bool first = true;
 		for (std::map<std::string, std::string>::iterator argument =
 				this->arguments.begin(); argument != this->arguments.end();
@@ -352,7 +351,7 @@ bool http_engine::send() {
         request += "Accept: */*\r\n";
         request += "Connection: close\r\n";
 	request += "\r\n\r\n" + this->body;
-	LogTrace() << "Sending: " << request;
+	LogDebug(std::string("Sending: ").append(request));
 	this->socksend(request);
 	return this->receive();
 }
@@ -363,7 +362,7 @@ bool http_engine::verify_callback(bool preverified,
 	char subject_name[256];
 	X509* cert = X509_STORE_CTX_get_current_cert(vctx.native_handle());
 	X509_NAME_oneline(X509_get_subject_name(cert), subject_name, 256);
-	LogDebug() << "Verifying Certificate: " << subject_name;
+	LogDebug(std::string("Verifying Certificate: ").append(subject_name));
 
 	return preverified;
 
@@ -424,7 +423,7 @@ bool http_engine::receive() {
 					else if (*position == '\n') {
 						position++;
 						if (!this->parse_status(status)) {
-							LogTrace() << boost::this_thread::get_id() << "Server Returned Fatal Status Code: " << status;
+							LogDebug(boost::str(boost::format("Server Returned Fatal Status Code: %1%") % status));
 							this->response->setStatus(status);
 							this->response->setDescription(description);
 							this->response->completed();
@@ -435,8 +434,7 @@ bool http_engine::receive() {
 								/* Redirect Limit */
 								if (this->redirtimes++ > 5) {
 									this->disconnect();
-									LogCritical()
-											<< "Redirection Failure. Redirected too many times: " << this->redirtimes;
+									LogFatal(boost::str(boost::format("Redirection Failure. Redirected too many times: %1%") % this->redirtimes));
 									this->response->setStatus(status);
 									this->response->setDescription(description);
 									this->response->completed();
@@ -446,15 +444,12 @@ bool http_engine::receive() {
 							    if (iter != tempheaders.end()) {
 							    	url = iter->second;
 
-									LogTrace() << "Redirecting (" << status
-											<< ") to " << url;
+									LogDebug(boost::str(boost::format("Redirecting (%1%) to %2%") % status % url));
 									this->response->setURL(url);
 									this->disconnect();
 									return true;
 								} else {
-									LogCritical() << "Redirection Failure ("
-											<< status
-											<< "). No Location Specified";
+									LogFatal(boost::str(boost::format("Redirection Failure ( %1% ). No Location Specified") % status));
 									this->response->setStatus(status);
 									this->response->setDescription(description);
 									this->response->completed();
@@ -497,7 +492,7 @@ bool http_engine::receive() {
 						tempvalue += *position++;
 					else {
 						position++;
-						LogTrace() << " Header key: " << tempkey << " value: " << tempvalue;
+						LogDebug(boost::str(boost::format(" Header key: %1% value: %2%") % tempkey % tempvalue));
 						tempheaders.insert(std::pair<std::string, std::string>(tempkey, tempvalue));
 						tempkey = "";
 						parser_state = HEADER_KEY;
@@ -558,7 +553,7 @@ void http_engine::disconnect() {
 				socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
 				socket.close();
 			} catch (boost::system::system_error& ec) {
-				LogWarn() << "Shutdown error: " << ec.what();
+				LogWarn(boost::str(boost::format("Shutdown error: %1%") % ec.what()));
 			}
 		}
 		break;
@@ -574,7 +569,7 @@ void http_engine::disconnect() {
 				}
 				this->sslsocket.lowest_layer().close();
 			} catch (boost::system::system_error& ec) {
-				LogWarn() << "Shutdown error: " << ec.what();
+				LogWarn(boost::str(boost::format("Shutdown error: %1%") % ec.what()));
 
 			}
 		}
@@ -586,7 +581,7 @@ http_response *http_engine::connect() {
 
 	//http_engine request(this->response,this->io_service);
 	while (this->send() == true) { }
-	LogDebug() << "Response: " << this->response->getStatus();
+	LogDebug(boost::str(boost::format("Response: %1%") %this->response->getStatus()));
 
 	//LogTrace() << "Body: " << this->response->getBody();
 	this->postbackio->post(
