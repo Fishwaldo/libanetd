@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.63])
 dnl AC_CONFIG_MACRO_DIR([autotools])
-AC_INIT([Libanetd], [0.1], [bugs@dynam.ac])
+AC_INIT([Libanetd], [0.2], [bugs@dynam.ac])
 AM_INIT_AUTOMAKE([1.10 no-define foreign])
 AC_PROG_LIBTOOL
 AC_CONFIG_SRCDIR([src])

@@ -27,6 +27,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <vector>
+#include <iostream>
 #include "anetd/LogClass.hpp"
 
 
