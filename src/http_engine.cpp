@@ -370,7 +370,7 @@ bool http_engine::verify_callback(bool preverified,
 #endif
 bool http_engine::receive() {
 
-	http_response_parser_state parser_state = VERSION;
+	http_response_parser_state parser_state = ANETD_VERSION;
 
 	size_t buffer_size = 2048;
 	char* buffer = new char[buffer_size];
@@ -389,35 +389,35 @@ bool http_engine::receive() {
 			char* position = buffer;
 			do {
 				switch (parser_state) {
-				case VERSION:
+				case ANETD_VERSION:
 					if (*position != ' ')
 						version += *position++;
 					else {
 						position++;
-						parser_state = STATUS;
+						parser_state = ANETD_STATUS;
 						temp = "";
 					}
 					break;
-				case STATUS:
+				case ANETD_STATUS:
 					if (*position != ' ')
 						temp += *position++;
 					else {
 						status = boost::lexical_cast<int>(temp);
 						position++;
-						parser_state = DESCRIPTION;
+						parser_state = ANETD_DESCRIPTION;
 					}
 					break;
-				case DESCRIPTION:
+				case ANETD_DESCRIPTION:
 					if (*position == '\r')
 						position++;
 					else if (*position != '\n')
 						description += *position++;
 					else {
 						position++;
-						parser_state = HEADER_KEY;
+						parser_state = ANETD_HEADER_KEY;
 					}
 					break;
-				case HEADER_KEY:
+				case ANETD_HEADER_KEY:
 					if (*position == '\r')
 						position++;
 					else if (*position == '\n') {
@@ -470,10 +470,10 @@ bool http_engine::receive() {
 						}
 					    std::map<std::string, std::string>::iterator iter = tempheaders.find("Content-Length");
 					    if (iter != tempheaders.end()) {
-					    	parser_state = 	(this->response->getBodySize() == 0) ? OK : BODY;
+					    	parser_state = 	(this->response->getBodySize() == 0) ? ANETD_OK : ANETD_BODY;
 					    } else {
 					    	this->response->setBodySize(0);
-					    	parser_state = BODY;
+					    	parser_state = ANETD_BODY;
 					    }
 					} else if (*position == ':')
 						position++;
@@ -482,10 +482,10 @@ bool http_engine::receive() {
 					else {
 						position++;
 						tempvalue = "";
-						parser_state = HEADER_VALUE;
+						parser_state = ANETD_HEADER_VALUE;
 					}
 					break;
-				case HEADER_VALUE:
+				case ANETD_HEADER_VALUE:
 					if (*position == '\r')
 						position++;
 					else if (*position != '\n')
@@ -495,23 +495,23 @@ bool http_engine::receive() {
 						LogDebug(boost::str(boost::format(" Header key: %1% value: %2%") % tempkey % tempvalue));
 						tempheaders.insert(std::pair<std::string, std::string>(tempkey, tempvalue));
 						tempkey = "";
-						parser_state = HEADER_KEY;
+						parser_state = ANETD_HEADER_KEY;
 					}
 					break;
-				case BODY:
+				case ANETD_BODY:
 					/* Ok, parse the status */
 					this->response->setBody(*position++);
 					if (this->response->getBody().length()
 							== this->response->getBodySize())
-						parser_state = OK;
+						parser_state = ANETD_OK;
 					break;
-				case OK:
+				case ANETD_OK:
 					position = buffer + bytes_read;
 					break;
 				}
 			} while (position < buffer + bytes_read);
 			this->response->flush();
-		} while (parser_state != OK);
+		} while (parser_state != ANETD_OK);
 		this->response->completed();
 	} catch (boost::system::system_error& e) {
 		if (e.code() == boost::asio::error::eof) {
@@ -653,4 +653,11 @@ bool http_engine::setProxyAuth(std::string username, std::string password) {
 	this->proxyauth.first = username;
 	this->proxyauth.second = password;
 	return true;
+}
+
+bool http_engine::getCompletion() {
+	if (this->Status.is_ready()) 
+		return true;
+	else
+		return false;
 }
