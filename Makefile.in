@@ -113,8 +113,8 @@ DIST_COMMON = $(srcdir)/autotools/am_prog_doxygen.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(top_srcdir)/include/anetd/anetdConfig.h.in \
 	$(srcdir)/Doxyfile.in $(srcdir)/libanetd.pc.in AUTHORS \
-	ChangeLog NEWS README config.guess config.sub depcomp \
-	install-sh missing ltmain.sh
+	ChangeLog NEWS README config.guess config.sub install-sh \
+	missing ltmain.sh
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/autotools/ax_boost_asio.m4 \
