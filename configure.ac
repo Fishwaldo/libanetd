@@ -8,6 +8,7 @@ AM_INIT_AUTOMAKE([1.10 no-define foreign])
 AC_PROG_LIBTOOL
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADERS([include/anetd/anetdConfig.h])
+AC_CONFIG_MACRO_DIR([autotools])
 
 # Checks for programs.
 AC_PROG_CXX
